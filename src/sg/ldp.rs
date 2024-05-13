@@ -13,6 +13,10 @@ use toml;
 
 static BASE: OnceLock<BaseData> = OnceLock::new();
 
+pub fn res(f :&str) -> String {
+	format!("../sgdata/{}", f)
+}
+
 pub fn base() -> &'static BaseData {
     BASE.get_or_init(base_init)
 }
@@ -63,7 +67,8 @@ pub async fn load_lpyd() {
 }
 
 pub async fn load_sspvmp() {
-    if let Ok(file) = File::open("data/sbpvmp.bin") {
+    //if let Ok(file) = File::open("data/sbpvmp.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("sbpvmp.bin")) {
         let rd = BufReader::new(file);
         if let Ok(sbpvmp) =
             bincode::deserialize_from::<BufReader<File>, HashMap<String, String>>(rd)
@@ -78,7 +83,8 @@ pub async fn load_sspvmp() {
 pub async fn load_ssfdot() {
     // get outage data
     let mut ssfdot = HashMap::<String, HashMap<String, Vec<(String, String, String)>>>::new();
-    if let Ok(file) = File::open("data/sbfdot.bin") {
+    //if let Ok(file) = File::open("data/sbfdot.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("sbfdot.bin")) {
         let rd = BufReader::new(file);
         if let Ok(ssfd) = bincode::deserialize_from::<
             BufReader<File>,
@@ -147,7 +153,8 @@ pub struct FeederTranx {
 
 pub async fn load_txmtmp() {
     let base = base();
-    if let Ok(file) = File::open("data/txmtmp.bin") {
+    //if let Ok(file) = File::open("data/txmtmp.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("txmtmp.bin")) {
         let rd = BufReader::new(file);
         if let Ok(txmtmp) =
             bincode::deserialize_from::<BufReader<File>, HashMap<String, TranxInfo>>(rd)
@@ -219,7 +226,8 @@ impl Task {
     pub async fn load_lpyd(
         &mut self,
     ) -> Vec<(Vec<String>, HashMap<String, Vec<Box<dcl::FeederLoad>>>)> {
-        if let Ok(f) = File::open("data/lpyd.bin") {
+        //if let Ok(f) = File::open("data/lpyd.bin") {
+        if let Ok(f) = File::open(crate::sg::ldp::res("lpyd.bin")) {
             let r = BufReader::new(f);
             if let Ok(mut lpyd) = bincode::deserialize_from::<
                 BufReader<File>,

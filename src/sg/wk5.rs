@@ -711,7 +711,8 @@ async fn add_outage(wk5prc: &mut Wk5Proc) {
                         if tp == tp0 {
                             let dttm1 = NaiveDateTime::parse_from_str(st.as_str(), fm0).unwrap();
                             let dttm2 = NaiveDateTime::parse_from_str(ed.as_str(), fm0).unwrap();
-                            ot00 += dttm2.timestamp_millis() - dttm1.timestamp_millis();
+                            //ot00 += dttm2.timestamp_millis() - dttm1.timestamp_millis();
+                            ot00 += dttm2.and_utc().timestamp_millis() - dttm1.and_utc().timestamp_millis();
                         }
                     }
                     let otd = ot00 as f64;

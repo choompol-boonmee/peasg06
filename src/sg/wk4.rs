@@ -208,7 +208,7 @@ impl Task {
     }
 
     pub async fn load_wk4prc(&mut self) {
-        if let Ok(file) = File::open("data/wk4prc.bin") {
+        if let Ok(file) = File::open(crate::sg::ldp::res("wk4prc.bin")) {
         print!("...2\n");
             let rd = BufReader::new(file);
             if let Ok(wk4prc) = bincode::deserialize_from::<BufReader<File>, Wk4Proc>(rd) {
@@ -230,7 +230,7 @@ impl Task {
         let ssv = self.subst_list.read().await.clone();
         let wk4prc = Wk4Proc { ssv };
         if let Ok(se) = bincode::serialize(&wk4prc) {
-            std::fs::write("data/wk4prc.bin", se).unwrap();
+            std::fs::write(crate::sg::ldp::res("wk4prc.bin"), se).unwrap();
         }
     }
 

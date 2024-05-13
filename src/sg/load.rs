@@ -39,7 +39,8 @@ pub fn get_sun_light() -> Vec<f64> {
 
 // map by provice, 360 days
 pub fn load_rain() -> HashMap<String, Vec<f64>> {
-    if let Ok(file) = File::open("data/pvrnyr.bin") {
+    //if let Ok(file) = File::open("data/pvrnyr.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("pvrnyr.bin")) {
         let rd = BufReader::new(file);
         if let Ok(pvrnyr) =
             bincode::deserialize_from::<BufReader<File>, HashMap<String, Vec<f64>>>(rd)
@@ -52,7 +53,8 @@ pub fn load_rain() -> HashMap<String, Vec<f64>> {
 
 // car register by province
 pub fn load_pvcamp() -> HashMap<String, f64> {
-    if let Ok(file) = File::open("data/pvcamp.bin") {
+    //if let Ok(file) = File::open("data/pvcamp.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("pvcamp.bin")) {
         let rd = BufReader::new(file);
         if let Ok(pvcamp) = bincode::deserialize_from::<BufReader<File>, HashMap<String, f64>>(rd) {
             return pvcamp;
@@ -63,7 +65,8 @@ pub fn load_pvcamp() -> HashMap<String, f64> {
 
 // gpp per province
 pub fn load_gpp() -> HashMap<String, f64> {
-    if let Ok(file) = File::open("data/pvgprt.bin") {
+    //if let Ok(file) = File::open("data/pvgprt.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("pvgprt.bin")) {
         let rd = BufReader::new(file);
         if let Ok(pvgprt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, f64>>(rd) {
             return pvgprt;

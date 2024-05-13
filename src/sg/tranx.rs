@@ -8,7 +8,8 @@ pub async fn run() {
 }
 
 pub async fn load_txmtmp() {
-    if let Ok(file) = File::open("data/txmtmp.bin") {
+    //if let Ok(file) = File::open("data/txmtmp.bin") {
+    if let Ok(file) = File::open(crate::sg::ldp::res("txmtmp.bin")) {
         let rd = BufReader::new(file);
         if let Ok(txmtmp) =
             bincode::deserialize_from::<BufReader<File>, HashMap<String, TranxInfo>>(rd)

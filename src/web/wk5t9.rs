@@ -58,7 +58,7 @@ impl ReportTemp {
                 let ss = &self.wk.ssv[s].ssid;
                 let fd = &self.wk.ssv[s].feeders[f].fdid;
                 ce = DaVa::Text(format!(
-                    "<a href='/feeder_yrpw01/{}/{}'>{}</a>",
+                    "<a href='feeder_yrpw01/{}/{}'>{}</a>",
                     ss,
                     fd,
                     v.form()
@@ -98,19 +98,8 @@ pub struct RepoRow1 {
 	pub ener: f32,
 }
 
-/*
-pub prov: String,
-pub dtx: usize,
-pub m1p: usize,
-pub m3p: usize,
-pub cost: f32,
-pub fina: f32,
-pub econ: f32,
-pub firr: f32,
-pub eirr: f32,
-    */
-const TT: [&str; 10] = [
-    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "ECON", "FIRR", "ENER",
+const TT: [&str; 9] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
 ];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
@@ -143,7 +132,12 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 	print!("e0: {}\n", e0);
 	
 	let mut sia = 0;
+	let (mut m1,mut m3) = (0,0);
     for (pi, pv) in pvs.iter().enumerate() {
+		let mut ok = true;
+		if !PRV1.contains(&pv.as_str()) {
+			continue;
+		}
         if let Some(siv) = pvm.get(pv) {
 			sia += siv.len();
 //print!("pv:{} siv:{}\n", pv, siv.len());
@@ -154,56 +148,68 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
             rw.m3p = 0;
             rw.cost = 0f32;
             rw.fina = 0f32;
-            rw.econ = 0f32;
             rw.firr = 0f32;
-            rw.eirr = 0f32;
 			rw.ener = 0f32;
 			//rw.ener = siv.len() as f32;
             //print!("{}\n", pv);
+			let mut flen = 0.0f32;
             for si in siv {
                 let ss = &wk5prc.ssv[*si];
                 for fi in 0..wk5prc.ssv[*si].feeders.len() {
                     let fd = &wk5prc.ssv[*si].feeders[fi];
-                    //print!("  {} {} {}\n", fd.prov, fd.ssid, fd.fdid);
-					let mut ok = false;
-					if PRV1.contains(&fd.prov.as_str()) {
-						//if fd.firr >= cfg.criteria.expect_min_firr {
-							ok = true;
-						//	}
-					} else if PRV2.contains(&fd.prov.as_str()) {
-						//if fd.firr >= -0.12 {
-							ok = true;
-						//}
+					//if fd.firr<0.10f32{
+					//	continue;
+					//}
+					if ss.prov=="สงขลา" && fd.firr<0.10f32{
+						continue;
 					}
-					if ok {
-						rw.dtx += fd.tx.tx_no;
-						rw.m1p += fd.tx.mt1_no;
-						rw.m3p += fd.tx.mt3_no;
-						rw.cost += fd.total_cost_npv;
-						rw.fina += fd.financial_benefit_npv;
-						rw.econ += fd.economic_benefit_npv;
-						if !fd.firr.is_nan() {
-							rw.firr += fd.firr;
-						}
-						rw.eirr += fd.ev_car_series[14];
-						rw.ener += fd.year_load.power_quality.pos_energy;
-						/*
-						if !fd.eirr.is_nan() {
-							rw.eirr += fd.eirr;
-						}
-						*/
+					/*
+					if ss.prov=="นครราชสีมา" && fd.firr<0.10f32{
+						continue;
 					}
+					*/
+					rw.dtx += fd.tx.tx_no;
+					rw.m1p += fd.tx.mt1_no;
+					rw.m3p += fd.tx.mt3_no;
+					m1 += fd.tx.mt1_no;
+					m3 += fd.tx.mt3_no;
+					rw.cost += fd.total_cost_npv;
+					rw.fina += fd.financial_benefit_npv;
+					if !fd.firr.is_nan() {
+						rw.firr += fd.firr;
+					}
+					rw.ener += fd.year_load.power_quality.pos_energy;
+					flen += 1.0f32;
                 }
-                let flen = wk5prc.ssv[*si].feeders.len() as f32;
-                rw.firr /= flen;
-                //rw.eirr /= flen;
             }
-            if rw.firr > 0f32 {
-                repo.rows.push(rw);
-            }
+			if flen>0.0f32 {
+				rw.firr /= flen;
+			}
+			if rw.firr > 0f32 {
+				repo.rows.push(rw);
+				for si in siv {
+					let ss = &wk5prc.ssv[*si];
+					for fi in 0..wk5prc.ssv[*si].feeders.len() {
+						let fd = &wk5prc.ssv[*si].feeders[fi];
+						let mut rw2 = RepoRow1::default();
+						rw2.prov = fd.fdid.to_string();
+						rw2.dtx = fd.tx.tx_no;
+						rw2.m1p = fd.tx.mt1_no;
+						rw2.m3p = fd.tx.mt3_no;
+						rw2.cost = fd.total_cost_npv;
+						rw2.fina = fd.financial_benefit_npv;
+						if !fd.firr.is_nan() {
+							rw2.firr = fd.firr;
+						}
+						rw2.ener = fd.year_load.power_quality.pos_energy;
+						//repo.rows.push(rw2);
+					}
+				}
+			}
         }
     }
 	print!("ALL feeders: {}\n", sia);
+	print!("METER {} {}\n", m1, m3);
     sp(wk5prc, repo);
 }
 
@@ -221,16 +227,15 @@ impl Report {
             4 => DaVa::USZ(self.rows[r].m3p),
             5 => DaVa::F32(self.rows[r].cost),
             6 => DaVa::F32(self.rows[r].fina),
-            7 => DaVa::F32(self.rows[r].econ),
-            8 => DaVa::F32(self.rows[r].firr * 100f32),
-            9 => DaVa::F32(self.rows[r].ener),
+            7 => DaVa::F32(self.rows[r].firr * 100f32),
+            8 => DaVa::F32(self.rows[r].ener),
             // ========
             n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }
     }
 }
 
-const PRV1: [&str; 19] = [
+const PRV1: [&str; 24] = [
 "ระยอง",
 "ชลบุรี",
 "กระบี่",
@@ -239,7 +244,6 @@ const PRV1: [&str; 19] = [
 "ฉะเชิงเทรา",
 "สมุทรสาคร",
 "ปทุมธานี",
-"ตาก",
 "บุรีรัมย์",
 "ปราจีนบุรี",
 "เพชรบุรี",
@@ -248,20 +252,18 @@ const PRV1: [&str; 19] = [
 "สระบุรี",
 "ภูเก็ต",
 "พิษณุโลก",
-"ระนอง",
 "สมุทรสงคราม",
-];
-
-const PRV2: [&str; 9] = [
 "ราชบุรี",
 "ขอนแก่น",
 "นครปฐม",
 "สงขลา",
-"นครราชสีมา",
+//"นครราชสีมา",
 "สุราษฎร์ธานี",
-"กาญจนบุรี",
+//"กาญจนบุรี",
 "นครสวรรค์",
-"ตราด",
+"ระนอง",
+//"ตาก",
+//"ตราด",
 ];
 
 pub async fn handler() -> ReportTemp {

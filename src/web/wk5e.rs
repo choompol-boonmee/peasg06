@@ -43,7 +43,7 @@ impl ReportTemp {
                 let ss = &self.wk.ssv[s].ssid;
                 let fd = &self.wk.ssv[s].feeders[f].fdid;
                 ce = DaVa::Text(format!(
-                    "<a href='/feeder_yrpw01/{}/{}'>{}</a>",
+                    "<a href='feeder_yrpw01/{}/{}'>{}</a>",
                     ss,
                     fd,
                     v.separate_with_commas()

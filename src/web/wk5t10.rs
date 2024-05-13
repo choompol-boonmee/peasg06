@@ -31,7 +31,7 @@ impl ReportTemp {
     }
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>) -> Self {
         let wk = wk5prc.read_owned().await;
-        let title = "FINANCIAL BENEFIT PROJECTION : WK5T";
+        let title = "FINANCIAL BENEFIT PROJECTION : WK5T10";
         let title = title.to_string();
 
         ReportTemp { wk, title }
@@ -58,7 +58,7 @@ impl ReportTemp {
                 let ss = &self.wk.ssv[s].ssid;
                 let fd = &self.wk.ssv[s].feeders[f].fdid;
                 ce = DaVa::Text(format!(
-                    "<a href='/feeder_yrpw01/{}/{}'>{}</a>",
+                    "<a href='feeder_yrpw01/{}/{}'>{}</a>",
                     ss,
                     fd,
                     v.form()
@@ -69,8 +69,7 @@ impl ReportTemp {
             DaVa::Text(s) => s,
             DaVa::F32(f) => f.form(),
             DaVa::F64(f) => f.form(),
-            //DaVa::USZ(u) => format!("{}", u),
-            DaVa::USZ(u) => u.form(),
+            DaVa::USZ(u) => format!("{}", u),
             d => format!("{:?}", d),
         }
     }
@@ -97,12 +96,10 @@ pub struct RepoRow1 {
     pub firr: f32,
     pub eirr: f32,
 	pub ener: f32,
-	pub acmt: usize,
-	pub fdcn: f32,
 }
 
-const TT: [&str; 11] = [
-    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER", "ACMT", "FCNT",
+const TT: [&str; 9] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
 ];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
@@ -121,14 +118,29 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
             siv.push(si);
         } else {
             pvm.insert(ss.prov.to_string(), vec![si]);
-			if ss.prov.len()>0 {
-				pvs.push(ss.prov.to_string());
-			}
+            pvs.push(ss.prov.to_string());
         }
     }
-	print!("province {}\n", pvs.len());
+
+	let mut e0 = 0f32;
+    for (si, ss) in wk5prc.ssv.iter().enumerate() {
+		for fi in 0..wk5prc.ssv[si].feeders.len() {
+			let fd = &wk5prc.ssv[si].feeders[fi];
+			e0 += fd.year_load.power_quality.pos_energy;
+		}
+	}
+	print!("e0: {}\n", e0);
+	
+	let mut sia = 0;
+	let (mut m1,mut m3) = (0,0);
     for (pi, pv) in pvs.iter().enumerate() {
+		let mut ok = true;
+		if !PRV1.contains(&pv.as_str()) {
+			continue;
+		}
         if let Some(siv) = pvm.get(pv) {
+			sia += siv.len();
+//print!("pv:{} siv:{}\n", pv, siv.len());
             let mut rw = RepoRow1::default();
             rw.prov = pv.to_string();
             rw.dtx = 0;
@@ -136,114 +148,74 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
             rw.m3p = 0;
             rw.cost = 0f32;
             rw.fina = 0f32;
-            rw.econ = 0f32;
             rw.firr = 0f32;
-            rw.eirr = 0f32;
-            rw.ener = 0f32;
-			rw.acmt = 0;
-			rw.fdcn = 0f32;
+			rw.ener = 0f32;
+			//rw.ener = siv.len() as f32;
             //print!("{}\n", pv);
+			let mut flen = 0.0f32;
             for si in siv {
                 let ss = &wk5prc.ssv[*si];
                 for fi in 0..wk5prc.ssv[*si].feeders.len() {
                     let fd = &wk5prc.ssv[*si].feeders[fi];
-                    //print!("  {} {} {}\n", fd.prov, fd.ssid, fd.fdid);
-					let mut ok = true;
+					//if fd.firr<0.10f32{
+					//	continue;
+					//}
+					if ss.prov=="สงขลา" && fd.firr<0.10f32{
+						continue;
+					}
 					/*
-					if PRV1.contains(&fd.prov.as_str()) {
-						//if fd.firr >= cfg.criteria.expect_min_firr {
-							ok = true;
-						//	}
-					} else if PRV2.contains(&fd.prov.as_str()) {
-						if fd.firr >= -0.12 {
-							ok = true;
-						}
+					if ss.prov=="นครราชสีมา" && fd.firr<0.10f32{
+						continue;
 					}
 					*/
-					if fd.firr >= -0.10 {
-						ok = true;
+					rw.dtx += fd.tx.tx_no;
+					rw.m1p += fd.tx.mt1_no;
+					rw.m3p += fd.tx.mt3_no;
+					m1 += fd.tx.mt1_no;
+					m3 += fd.tx.mt3_no;
+					rw.cost += fd.total_cost_npv;
+					rw.fina += fd.financial_benefit_npv;
+					if !fd.firr.is_nan() {
+						rw.firr += fd.firr;
 					}
-					if ok {
-						rw.dtx += fd.tx.tx_no;
-						rw.m1p += fd.tx.mt1_no;
-						rw.m3p += fd.tx.mt3_no;
-						rw.cost += fd.total_cost_npv;
-						rw.fina += fd.financial_benefit_npv;
-						rw.econ += fd.economic_benefit_npv;
+					rw.ener += fd.year_load.power_quality.pos_energy;
+					flen += 1.0f32;
+                }
+            }
+			if flen>0.0f32 {
+				rw.firr /= flen;
+			}
+			if rw.firr > 0f32 {
+				let mut rw0 = RepoRow1::default();
+				rw0.prov = "==============".to_string();
+				repo.rows.push(rw0);
+				repo.rows.push(rw);
+				let mut dets = Vec::new();
+				for si in siv {
+					let ss = &wk5prc.ssv[*si];
+					for fi in 0..wk5prc.ssv[*si].feeders.len() {
+						let fd = &wk5prc.ssv[*si].feeders[fi];
+						let mut rw2 = RepoRow1::default();
+						rw2.prov = fd.fdid.to_string();
+						rw2.dtx = fd.tx.tx_no;
+						rw2.m1p = fd.tx.mt1_no;
+						rw2.m3p = fd.tx.mt3_no;
+						rw2.cost = fd.total_cost_npv;
+						rw2.fina = fd.financial_benefit_npv;
 						if !fd.firr.is_nan() {
-							rw.firr += fd.firr;
-							rw.fdcn += 1.0;
+							rw2.firr = fd.firr;
 						}
-						rw.eirr += fd.ev_car_series[14];
-						rw.ener += fd.year_load.power_quality.pos_energy;
-						//rw.fdcn += 1.0;
-						/*
-						if !fd.eirr.is_nan() {
-							rw.eirr += fd.eirr;
-						}
-						*/
+						rw2.ener = fd.year_load.power_quality.pos_energy;
+						dets.push(rw2);
 					}
-                }
-				if rw.fdcn>0.0 {
-				//rw.firr /= rw.fdcn;
-				rw.firr = (rw.fina-rw.cost)/rw.cost;
 				}
-				/*
-                let flen = wk5prc.ssv[*si].feeders.len() as f32;
-				if !flen.is_nan() && flen>0.0 {
-					rw.firr /= flen;
-				}
-				*/
-                //rw.eirr /= flen;
-            }
-            //if rw.firr > 0f32 {
-                repo.rows.push(rw);
-            //}
+				dets.sort_by(|a,b| b.fina.partial_cmp(&a.fina).unwrap());
+				repo.rows.append(&mut dets);
+			}
         }
     }
-    repo.rows.sort_by(|a, b| {
-		b.firr.partial_cmp(&a.firr).unwrap()
-    });
-	repo.rows[0].acmt = repo.rows[0].m1p + repo.rows[0].m3p;
-	for ri in 1..repo.rows.len() {
-		repo.rows[ri].acmt = repo.rows[ri-1].acmt + repo.rows[ri].m1p + repo.rows[0].m3p;
-	}
-    /*
-    let cfg = base().config.read().await;
-    let syf = cfg.criteria.start_year_from_2022;
-    let imy = cfg.criteria.implement_year;
-    let opy = cfg.criteria.operate_year;
-    let yrl = syf + imy + opy;
-    let yrl = yrl as usize;
-    for i in 0..yrl {
-        let yr = 2022 + i + 1;
-        repo.cols.push(format!("{}:ev", yr));
-        repo.sums.push(DaVa::None);
-    }
-    */
-
-    //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
-    //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
-    /*
-    let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
-    for s in 0..wk5prc.ssv.len() {
-        for f in 0..wk5prc.ssv[s].feeders.len() {
-            let mut rw = RepoRow1::default();
-            rw.s = s;
-            rw.f = f;
-            let fd = &wk5prc.ssv[s].feeders[f];
-            if re.is_match(fd.fdid.as_str()) {
-                //if &fd.fdid[5..6] == "V" {
-                if fd.ev.ev_ds > 0.0 && fd.tx.tx_no > 0 {
-                    repo.rows.push(rw);
-                }
-            }
-        }
-    }
-    */
-
-    //sum(&mut repo, &wk5prc.ssv);
-
+	print!("ALL feeders: {}\n", sia);
+	print!("METER {} {}\n", m1, m3);
     sp(wk5prc, repo);
 }
 
@@ -263,15 +235,13 @@ impl Report {
             6 => DaVa::F32(self.rows[r].fina),
             7 => DaVa::F32(self.rows[r].firr * 100f32),
             8 => DaVa::F32(self.rows[r].ener),
-            9 => DaVa::USZ(self.rows[r].acmt),
-            10 => DaVa::F32(self.rows[r].fdcn),
             // ========
             n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }
     }
 }
 
-const PRV1: [&str; 19] = [
+const PRV1: [&str; 24] = [
 "ระยอง",
 "ชลบุรี",
 "กระบี่",
@@ -280,7 +250,6 @@ const PRV1: [&str; 19] = [
 "ฉะเชิงเทรา",
 "สมุทรสาคร",
 "ปทุมธานี",
-"ตาก",
 "บุรีรัมย์",
 "ปราจีนบุรี",
 "เพชรบุรี",
@@ -289,20 +258,18 @@ const PRV1: [&str; 19] = [
 "สระบุรี",
 "ภูเก็ต",
 "พิษณุโลก",
-"ระนอง",
 "สมุทรสงคราม",
-];
-
-const PRV2: [&str; 9] = [
 "ราชบุรี",
 "ขอนแก่น",
 "นครปฐม",
 "สงขลา",
-"นครราชสีมา",
+//"นครราชสีมา",
 "สุราษฎร์ธานี",
-"กาญจนบุรี",
+//"กาญจนบุรี",
 "นครสวรรค์",
-"ตราด",
+"ระนอง",
+//"ตาก",
+//"ตราด",
 ];
 
 pub async fn handler() -> ReportTemp {

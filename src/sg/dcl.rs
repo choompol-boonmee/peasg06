@@ -106,7 +106,7 @@ pub struct ConfigIndustry {
     pub cost_soft_per_device: f64, // = 3000
     pub cost_comm_per_device: f64, // = 1800
     pub cost_oper_per_device: f64, // = 2000
-    pub influ_factor: f64,         // = 0.5
+    //pub influ_factor: f64,         // = 0.5
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]

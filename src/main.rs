@@ -13,6 +13,7 @@ async fn main() {
         "P2" => crate::sg::init2::run().await,
         "P3" => crate::sg::init3::run().await,
         "P4" => crate::sg::tranx::run().await,
+        "P5" => crate::sg::mvline::read().await,
         _ => print!("NG\n"),
     }
     print!("ath {}\n", ath);

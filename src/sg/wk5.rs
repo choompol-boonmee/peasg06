@@ -6,6 +6,7 @@ pub async fn load_wk5prc() {}
 
 use crate::sg::ldp::base;
 use crate::sg::load::load_pvcamp;
+use crate::sg::load::load_sbgismp;
 use crate::sg::{dcl, ldp, wk4};
 use crate::web;
 use crate::web::{wk5, wk5a};
@@ -25,6 +26,7 @@ use tokio::sync::RwLock;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Wk5Proc {
     pub repo1: wk5::Repo1,
+	pub sbgismp: HashMap::<String,(f32,f32,String,String,String,String,String)>,
     pub wk5a: web::wk5a::Repo1,
     pub wk5b: web::wk5b::Repo1,
     pub wk5c: web::wk5c::Report,
@@ -277,6 +279,18 @@ async fn task1() {
         print!("sumx {} {}\n", sum1, sum2);
         wk5prc.prov_v = Vec::from_iter(prov_set);
         wk5prc.prov_v.sort();
+		wk5prc.sbgismp = load_sbgismp();
+		
+		/*
+    if let Ok(file) = File::open(crate::sg::ldp::res("sbgismp.bin")) {
+        let rd = BufReader::new(file);
+        if let Ok(sbgismp) =
+            bincode::deserialize_from::<BufReader<File>, HashMap<String, (f32,f32,String,String,String,String,String)>>(rd)
+        {
+			wk5prc.sbgismp = sbgismp;
+        }
+    }
+	*/
     }
     print!("power calc\n");
     power(&mut wk5prc.ssv).await;

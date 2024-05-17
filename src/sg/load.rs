@@ -51,6 +51,22 @@ pub fn load_rain() -> HashMap<String, Vec<f64>> {
     HashMap::new()
 }
 
+pub fn load_sbgismp() -> HashMap<String, (f32,f32,String,String,String,String,String)> {
+    if let Ok(file) = File::open(crate::sg::ldp::res("sbgismp.bin")) {
+        let rd = BufReader::new(file);
+        if let Ok(sbgismp) =
+            bincode::deserialize_from::<BufReader<File>, HashMap<String, (f32,f32,String,String,String,String,String)>>(rd)
+        {
+			return sbgismp;
+        } else {
+			print!("NG DESER SBGISMP\n");
+		}
+    } else {
+		print!("NG OPEN SBGISMP\n");
+	}
+	HashMap::new()
+}
+
 // car register by province
 pub fn load_pvcamp() -> HashMap<String, f64> {
     //if let Ok(file) = File::open("data/pvcamp.bin") {

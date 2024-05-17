@@ -16,5 +16,4 @@ async fn main() {
         "P5" => crate::sg::mvline::read().await,
         _ => print!("NG\n"),
     }
-    print!("ath {}\n", ath);
 }

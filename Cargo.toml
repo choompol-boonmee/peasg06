@@ -20,3 +20,6 @@ tokio = { version = "1.36.0", features = ["full"] }
 toml = "0.8.10"
 uuid = { version = "1.7.0", features = ["v4"] }
 #xlsxwriter = "0.6.0"
+shapefile = "0.4.0"
+dbase = "0.3.0"
+

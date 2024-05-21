@@ -9,7 +9,7 @@ use crate::sg::load::load_pvcamp;
 use crate::sg::load::load_sbgismp;
 use crate::sg::{dcl, ldp, wk4};
 use crate::web;
-use crate::web::{wk5, wk5a};
+//use crate::web::{wk5, wk5a};
 use askama::Template;
 use askama_axum;
 use chrono::NaiveDateTime;
@@ -25,7 +25,7 @@ use tokio::sync::RwLock;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Wk5Proc {
-    pub repo1: wk5::Repo1,
+    pub repo1: web::wk5::Repo1,
 	pub sbgismp: HashMap::<String,(f32,f32,String,String,String,String,String)>,
     pub wk5a: web::wk5a::Repo1,
     pub wk5b: web::wk5b::Repo1,
@@ -304,7 +304,7 @@ async fn task1() {
     infra_calc(&mut wk5prc, base().config.clone()).await;
     return_calc(&mut wk5prc, base().config.clone()).await;
 
-    wk5::make_repo1(&mut wk5prc, base().config.clone()).await;
+    web::wk5::make_repo1(&mut wk5prc, base().config.clone()).await;
     web::wk5a::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5b::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5c::make_repo(&mut wk5prc, base().config.clone()).await;
@@ -418,6 +418,19 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let syf = cfg.criteria.start_year_from_2022;
     let imy = cfg.criteria.implement_year;
     let opy = cfg.criteria.operate_year;
+	
+	let txc = cfg.criteria.smart_trx_unit_cost;
+	let m1c = cfg.criteria.smart_m1p_unit_cost;
+	let m3c = cfg.criteria.smart_m3p_unit_cost;
+	let plc = cfg.criteria.platform_cost_per_device;
+	let imc = cfg.criteria.implement_cost_per_device;
+	let opc = cfg.criteria.operation_cost_per_year_device;
+	let mrc = cfg.criteria.meter_reading_cost_cut;
+	let ooc = cfg.criteria.outage_operation_cost_per_hour;
+	let pll = cfg.criteria.loss_in_power_line_rate;
+	let esp = cfg.criteria.energy_sale_price;
+	let phl = cfg.criteria.loss_in_phase_balance_rate;
+	
     let ims = syf as usize;
     let ops = syf as usize + imy as usize;
     let ope = ops + opy as usize;

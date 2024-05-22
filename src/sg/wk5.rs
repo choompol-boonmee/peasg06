@@ -57,7 +57,11 @@ pub struct Wk5Proc {
     pub wk5t8: web::wk5t8::Report,
     pub wk5t9: web::wk5t9::Report,
     pub wk5t10: web::wk5t10::Report,
+    pub wk5t11: web::wk5t11::Report,
+    pub wk5t12: web::wk5t12::Report,
     pub wk5u1: web::wk5u1::Report,
+    pub home: web::home::Report,
+    pub wk5x1: web::wk5x1::Report,
     pub ssv: Vec<Substation>,
     pub tx: Tranx,
     pub year_load: wk4::YearLoad,
@@ -152,6 +156,10 @@ pub struct FeederLoad {
     pub financial_benefit_npv_series: Vec<f32>,
     pub economic_benefit_npv_series: Vec<f32>,
     pub total_cost_npv_series: Vec<f32>,
+	pub firr_series: Vec<f32>,
+	pub eirr_series: Vec<f32>,
+	pub net_financial_return_series: Vec<f32>,
+	pub net_economic_return_series: Vec<f32>,
 
     pub firr: f32,
     pub eirr: f32,
@@ -280,17 +288,7 @@ async fn task1() {
         wk5prc.prov_v = Vec::from_iter(prov_set);
         wk5prc.prov_v.sort();
 		wk5prc.sbgismp = load_sbgismp();
-		
-		/*
-    if let Ok(file) = File::open(crate::sg::ldp::res("sbgismp.bin")) {
-        let rd = BufReader::new(file);
-        if let Ok(sbgismp) =
-            bincode::deserialize_from::<BufReader<File>, HashMap<String, (f32,f32,String,String,String,String,String)>>(rd)
-        {
-			wk5prc.sbgismp = sbgismp;
-        }
-    }
-	*/
+
     }
     print!("power calc\n");
     power(&mut wk5prc.ssv).await;
@@ -335,7 +333,10 @@ async fn task1() {
     web::wk5t8::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5t9::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5t10::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5t11::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5t12::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5u1::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5x1::make_repo(&mut wk5prc, base().config.clone()).await;
     {
         let a_wk5prc = base().wk5prc.clone();
         let mut a_wk5prc = a_wk5prc.write().await;
@@ -373,6 +374,7 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let yrl = yrl as usize;
     let yr0 = syf as usize + imy as usize;
     let yri = syf as usize;
+	print!("solar calc\n");
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
             let mut fd = &mut wk5prc.ssv[si].feeders[fi];
@@ -414,18 +416,22 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 
 async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let cfg = acfg.read().await;
+	
     let ifv = cfg.criteria.infra_invest_per_year;
     let syf = cfg.criteria.start_year_from_2022;
     let imy = cfg.criteria.implement_year;
     let opy = cfg.criteria.operate_year;
 	
 	let txc = cfg.criteria.smart_trx_unit_cost;
+
 	let m1c = cfg.criteria.smart_m1p_unit_cost;
 	let m3c = cfg.criteria.smart_m3p_unit_cost;
 	let plc = cfg.criteria.platform_cost_per_device;
 	let imc = cfg.criteria.implement_cost_per_device;
 	let opc = cfg.criteria.operation_cost_per_year_device;
+	
 	let mrc = cfg.criteria.meter_reading_cost_cut;
+	
 	let ooc = cfg.criteria.outage_operation_cost_per_hour;
 	let pll = cfg.criteria.loss_in_power_line_rate;
 	let esp = cfg.criteria.energy_sale_price;
@@ -585,18 +591,22 @@ async fn return_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 let mut toco = 0.0;
 
                 fibe += fd.solar_revenue_series[i];
-                toco += fd.solar_storage_cost_series[i];
                 fibe += fd.ev_revenue_series[i];
-                toco += fd.ev_batt_cost_series[i];
+                fibe += fd.meter_reading_cost_series[i];
+
                 ecbe += fd.infra_invest_year_series[i];
+				
+                toco += fd.solar_storage_cost_series[i];
+                toco += fd.ev_batt_cost_series[i];
                 toco += fd.smart_trx_cost_series[i];
                 toco += fd.smart_m1p_cost_series[i];
                 toco += fd.smart_m3p_cost_series[i];
-                toco += fd.comm_cost_year_series[i];
                 toco += fd.platform_cost_series[i];
                 toco += fd.implement_cost_series[i];
+				
+                toco += fd.comm_cost_year_series[i];
                 toco += fd.operation_cost_series[i];
-                fibe += fd.meter_reading_cost_series[i];
+
                 ecbe += fd.outage_operation_cost_series[i];
                 ecbe += fd.loss_in_power_line_cost_series[i];
                 ecbe += fd.loss_in_phase_balance_cost_series[i];
@@ -621,6 +631,12 @@ async fn return_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.financial_benefit_npv_series.push(fibe0);
                 fd.economic_benefit_npv_series.push(ecbe0);
                 fd.total_cost_npv_series.push(toco0);
+				let mut firr = (fibe0-toco0) / toco0 * 100.0f32;
+				let mut eirr = (ecbe0-toco0) / toco0 * 100.0f32;
+				fd.net_financial_return_series.push(fibe0 - toco0);
+				fd.net_economic_return_series.push(ecbe0 - toco0);
+				fd.firr_series.push(firr);
+				fd.eirr_series.push(eirr);
 
                 fibe_a += fibe;
                 ecbe_a += ecbe;
@@ -637,8 +653,8 @@ async fn return_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
             fd.economic_benefit_npv = ecbe0_a;
             fd.total_cost_npv = toco0_a;
 
-            fd.firr = (fibe0_a - toco0_a) / toco0_a;
-            fd.eirr = (ecbe0_a - toco0_a) / toco0_a;
+            fd.firr = (fibe0_a - toco0_a) / toco0_a / opy;
+            fd.eirr = (ecbe0_a - toco0_a) / toco0_a / opy;
         }
     }
 }
@@ -678,7 +694,10 @@ async fn ev_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.ev_car_series.push(evn);
                 let evp = evn * epw;
                 let eve = evp * 365.0 * cfg.criteria.ev_real_charge;
-                let evr = eve * eup;
+                let mut evr = 0.0;
+				if i>=yr0 {
+					evr = eve * eup;
+				}
                 fd.ev_power_series.push(evp);
                 fd.ev_energy_series.push(eve);
                 fd.ev_revenue_series.push(evr);

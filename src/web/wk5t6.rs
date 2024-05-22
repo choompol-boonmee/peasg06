@@ -145,15 +145,21 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
         }
     }
     repo.rows.sort_by(|a, b| {
-        let p1 = &wk5prc.ssv[a.s].feeders[a.f].prov;
-        let p2 = &wk5prc.ssv[b.s].feeders[b.f].prov;
-        let f1 = &wk5prc.ssv[a.s].feeders[a.f].fdid;
-        let f2 = &wk5prc.ssv[b.s].feeders[b.f].fdid;
-        if p1 == p2 {
-            f1.cmp(&f2)
-        } else {
-            p1.cmp(&p2)
-        }
+        let a0 = &wk5prc.ssv[a.s].prov;
+        let a1 = &wk5prc.ssv[a.s].ssid;
+        let a2 = &wk5prc.ssv[a.s].feeders[a.f].fdid;
+        let b0 = &wk5prc.ssv[b.s].prov;
+        let b1 = &wk5prc.ssv[b.s].ssid;
+        let b2 = &wk5prc.ssv[b.s].feeders[b.f].fdid;
+		if a0!=b0 {
+			a0.partial_cmp(b0).unwrap()
+		} else {
+			if a1!=b1 {
+				a1.partial_cmp(b1).unwrap()
+			} else {
+				a2.partial_cmp(b2).unwrap()
+			}
+		}
         /*
         let a1 = &wk5prc.ssv[a.s].feeders[a.f].firr;
         let b1 = &wk5prc.ssv[b.s].feeders[b.f].firr;

@@ -171,6 +171,9 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 					if ss.prov=="สงขลา" && fd.firr<0.10f32{
 						continue;
 					}
+					if fd.tx.tx_no<1 || fd.tx.mt3_no<1 || fd.tx.mt1_no<1 {
+						continue;
+					}
 					/*
 					if ss.prov=="นครราชสีมา" && fd.firr<0.10f32{
 						continue;
@@ -203,6 +206,12 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 					let ss = &wk5prc.ssv[*si];
 					for fi in 0..wk5prc.ssv[*si].feeders.len() {
 						let fd = &wk5prc.ssv[*si].feeders[fi];
+						if ss.prov=="สงขลา" && fd.firr<0.10f32{
+							continue;
+						}
+						if fd.tx.tx_no<1 || fd.tx.mt3_no<1 || fd.tx.mt1_no<1 {
+							continue;
+						}
 						let mut rw2 = RepoRow1::default();
 						rw2.prov = fd.fdid.to_string();
 						let ssid = fd.ssid.to_string();

@@ -19,19 +19,19 @@ pub struct ReportTemp {
 }
 
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
-    &wk5prc.wk5t9
+    &wk5prc.wk5t12
 }
 fn sp(wk5prc: &mut wk5::Wk5Proc, rp: Report) {
-    wk5prc.wk5t9 = rp;
+    wk5prc.wk5t12 = rp;
 }
 
 impl ReportTemp {
     pub fn repo(&self) -> &Report {
-        &self.wk.wk5t9
+        &self.wk.wk5t12
     }
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>) -> Self {
         let wk = wk5prc.read_owned().await;
-        let title = "FINANCIAL BENEFIT PROJECTION : WK5T";
+        let title = "FINANCIAL BENEFIT PROJECTION2 : WK5T12";
         let title = title.to_string();
 
         ReportTemp { wk, title }
@@ -64,7 +64,14 @@ impl ReportTemp {
                     v.form()
                 ));
             }
-        }
+        } else if *c == 9 {
+			//print!("ce {:?}\n", ce);
+            if let DaVa::Text(ref v) = ce {
+				if v.len()>0 {
+					ce = DaVa::Text(format!("<a href='{}'>MAP</a>",v));
+				}
+            }
+		}
         match ce {
             DaVa::Text(s) => s,
             DaVa::F32(f) => f.form(),
@@ -96,10 +103,11 @@ pub struct RepoRow1 {
     pub firr: f32,
     pub eirr: f32,
 	pub ener: f32,
+	pub map: String,
 }
 
-const TT: [&str; 9] = [
-    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
+const TT: [&str; 10] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER", "MAP",
 ];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
@@ -189,7 +197,11 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 				rw.firr /= flen;
 			}
 			if rw.firr > 0f32 {
+				let mut rw0 = RepoRow1::default();
+				rw0.prov = "==============".to_string();
+				repo.rows.push(rw0);
 				repo.rows.push(rw);
+				let mut dets = Vec::new();
 				for si in siv {
 					let ss = &wk5prc.ssv[*si];
 					for fi in 0..wk5prc.ssv[*si].feeders.len() {
@@ -202,6 +214,17 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 						}
 						let mut rw2 = RepoRow1::default();
 						rw2.prov = fd.fdid.to_string();
+						let ssid = fd.ssid.to_string();
+						//print!("ssid:{} fdid:{}\n", ssid, fd.fdid);
+						//rw2.map = "MMM".to_string();
+						if let Some(gis) = wk5prc.sbgismp.get(&ssid) {
+							let ltln = format!("http://maps.google.com/maps?q={},{}", gis.0, gis.1);
+							//print!("  {}\n", ltln);
+							//https://www.google.com/maps/search/?api=1&query=47.5951518%2C-122.3316393
+							//https://www.google.com/maps/search/?api=1&query=7.4861407,100.43633
+							//http://maps.google.com/maps?q=7.4861407,100.43633
+							rw2.map = ltln;
+						}
 						rw2.dtx = fd.tx.tx_no;
 						rw2.m1p = fd.tx.mt1_no;
 						rw2.m3p = fd.tx.mt3_no;
@@ -211,9 +234,12 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 							rw2.firr = fd.firr;
 						}
 						rw2.ener = fd.year_load.power_quality.pos_energy;
-						//repo.rows.push(rw2);
+						dets.push(rw2);
 					}
 				}
+				//dets.sort_by(|a,b| b.fina.partial_cmp(&a.fina).unwrap());
+				dets.sort_by(|a,b| b.prov.partial_cmp(&a.prov).unwrap());
+				repo.rows.append(&mut dets);
 			}
         }
     }
@@ -238,6 +264,7 @@ impl Report {
             6 => DaVa::F32(self.rows[r].fina),
             7 => DaVa::F32(self.rows[r].firr * 100f32),
             8 => DaVa::F32(self.rows[r].ener),
+            9 => DaVa::Text(self.rows[r].map.to_string()),
             // ========
             n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }

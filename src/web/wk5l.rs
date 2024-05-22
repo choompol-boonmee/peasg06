@@ -31,7 +31,7 @@ impl ReportTemp {
     }
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>) -> Self {
         let wk = wk5prc.read_owned().await;
-        let title = "SOLAR REVENUE PROJECTION : WK5K";
+        let title = "SOLAR REVENUE PROJECTION : WK5L";
         let title = title.to_string();
 
         ReportTemp { wk, title }
@@ -107,7 +107,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
     let yrl = yrl as usize;
     for i in 0..yrl {
         let yr = 2022 + i + 1;
-        repo.cols.push(format!("{}:mwh", yr));
+        repo.cols.push(format!("{}:thb", yr));
         repo.sums.push(DaVa::None);
     }
     let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
@@ -126,9 +126,26 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
         }
     }
     repo.rows.sort_by(|a, b| {
+        let a0 = &wk5prc.ssv[a.s].prov;
+        let a1 = &wk5prc.ssv[a.s].ssid;
+        let a2 = &wk5prc.ssv[a.s].feeders[a.f].fdid;
+        let b0 = &wk5prc.ssv[b.s].prov;
+        let b1 = &wk5prc.ssv[b.s].ssid;
+        let b2 = &wk5prc.ssv[b.s].feeders[b.f].fdid;
+		if a0!=b0 {
+			a0.partial_cmp(b0).unwrap()
+		} else {
+			if a1!=b1 {
+				a1.partial_cmp(b1).unwrap()
+			} else {
+				a2.partial_cmp(b2).unwrap()
+			}
+		}
+		/*
         let a1 = &wk5prc.ssv[a.s].feeders[a.f].year_load.power_quality.pos_energy;
         let b1 = &wk5prc.ssv[b.s].feeders[b.f].year_load.power_quality.pos_energy;
         b1.partial_cmp(a1).unwrap()
+		*/
     });
     sum(&mut repo, &wk5prc.ssv);
     sp(wk5prc, repo);

@@ -19,19 +19,19 @@ pub struct ReportTemp {
 }
 
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
-    &wk5prc.wk5s
+    &wk5prc.wk5t11
 }
 fn sp(wk5prc: &mut wk5::Wk5Proc, rp: Report) {
-    wk5prc.wk5s = rp;
+    wk5prc.wk5t11 = rp;
 }
 
 impl ReportTemp {
     pub fn repo(&self) -> &Report {
-        &self.wk.wk5s
+        &self.wk.wk5t11
     }
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>) -> Self {
         let wk = wk5prc.read_owned().await;
-        let title = "PROJECT COST : WK5S";
+        let title = "Financial Internal Return : WK5T11";
         let title = title.to_string();
 
         ReportTemp { wk, title }
@@ -88,24 +88,7 @@ pub struct RepoRow1 {
     pub f: usize, // feeder
 }
 
-const TT: [&str; 15] = [
-"NO", 
-"PROV", 
-"FDID", 
-"INFRA", 
-"TRX", 
-"M1P", 
-"M3P", 
-"COMM", 
-"PLATF", 
-"IMPL", 
-"OPER", 
-"METER", 
-"OUTAGE", 
-"LOSS", 
-"PHASE",
-];
-
+const TT: [&str; 4] = ["NO", "PROV", "FDID", "SALE"];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
@@ -121,6 +104,11 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
     let opy = cfg.criteria.operate_year;
     let yrl = syf + imy + opy;
     let yrl = yrl as usize;
+    for i in 0..yrl {
+        let yr = 2022 + i + 1;
+        repo.cols.push(format!("{}:thb", yr));
+        repo.sums.push(DaVa::None);
+    }
     //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
     //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
     let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
@@ -154,11 +142,6 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 				a2.partial_cmp(b2).unwrap()
 			}
 		}
-		/*
-        let a1 = &wk5prc.ssv[a.s].feeders[a.f].ev.ev_ds;
-        let b1 = &wk5prc.ssv[b.s].feeders[b.f].ev.ev_ds;
-        b1.partial_cmp(a1).unwrap()
-		*/
     });
 
     sum(&mut repo, &wk5prc.ssv);
@@ -176,20 +159,9 @@ impl Report {
             0 => DaVa::USZ(r + 1),
             1 => DaVa::Text(ss.prov.to_string()),
             2 => DaVa::Text(fd.fdid5.to_string()),
-            3 => DaVa::F32(fd.infra_invest_year),
-            4 => DaVa::F32(fd.smart_trx_cost),
-            5 => DaVa::F32(fd.smart_m1p_cost),
-            6 => DaVa::F32(fd.smart_m3p_cost),
-            7 => DaVa::F32(fd.comm_cost_year),
-            8 => DaVa::F32(fd.platform_cost),
-            9 => DaVa::F32(fd.implement_cost),
-            10 => DaVa::F32(fd.operation_cost),
-            11 => DaVa::F32(fd.meter_reading_cost),
-            12 => DaVa::F32(fd.outage_operation_cost),
-            13 => DaVa::F32(fd.loss_in_power_line_cost),
-            14 => DaVa::F32(fd.loss_in_phase_balance_cost),
+            3 => DaVa::F32(fd.ev.ev_ds),
             // ========
-            n => DaVa::USZ(n),
+            n => DaVa::F32(fd.net_financial_return_series[n - 4]),
         }
     }
 }

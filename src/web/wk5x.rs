@@ -49,26 +49,9 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
         }
     }
     wk5prc.wk5a.rows.sort_by(|a, b| {
-        let a0 = &wk5prc.ssv[a.s].prov;
-        let a1 = &wk5prc.ssv[a.s].ssid;
-        let a2 = &wk5prc.ssv[a.s].feeders[a.f].fdid;
-        let b0 = &wk5prc.ssv[b.s].prov;
-        let b1 = &wk5prc.ssv[b.s].ssid;
-        let b2 = &wk5prc.ssv[b.s].feeders[b.f].fdid;
-		if a0!=b0 {
-			a0.partial_cmp(b0).unwrap()
-		} else {
-			if a1!=b1 {
-				a1.partial_cmp(b1).unwrap()
-			} else {
-				a2.partial_cmp(b2).unwrap()
-			}
-		}
-		/*
         let a1 = wk5prc.ssv[a.s].feeders[a.f].para1.energy;
         let b1 = wk5prc.ssv[b.s].feeders[b.f].para1.energy;
         b1.partial_cmp(&a1).unwrap()
-		*/
     });
     /*
     for r in 1..wk5prc.repo1.rows.len() {

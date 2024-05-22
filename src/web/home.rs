@@ -12,26 +12,26 @@ use tokio::sync::RwLock;
 use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
 
 #[derive(Template, Debug)]
-#[template(path = "pg2/wk5f.html", escape = "none")]
+#[template(path = "pg2/home.html", escape = "none")]
 pub struct ReportTemp {
     pub title: String,
     pub wk: OwnedRwLockReadGuard<wk5::Wk5Proc>,
 }
 
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
-    &wk5prc.wk5s
+    &wk5prc.home
 }
 fn sp(wk5prc: &mut wk5::Wk5Proc, rp: Report) {
-    wk5prc.wk5s = rp;
+    wk5prc.home = rp;
 }
 
 impl ReportTemp {
     pub fn repo(&self) -> &Report {
-        &self.wk.wk5s
+        &self.wk.home
     }
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>) -> Self {
         let wk = wk5prc.read_owned().await;
-        let title = "PROJECT COST : WK5S";
+        let title = "HOME";
         let title = title.to_string();
 
         ReportTemp { wk, title }
@@ -58,7 +58,7 @@ impl ReportTemp {
                 let ss = &self.wk.ssv[s].ssid;
                 let fd = &self.wk.ssv[s].feeders[f].fdid;
                 ce = DaVa::Text(format!(
-                    "<a href='/feeder_yrpw01/{}/{}'>{}</a>",
+                    "<a href='feeder_yrpw01/{}/{}'>{}</a>",
                     ss,
                     fd,
                     v.form()
@@ -86,26 +86,21 @@ pub struct Report {
 pub struct RepoRow1 {
     pub s: usize, // substation
     pub f: usize, // feeder
+    pub prov: String,
+    pub dtx: usize,
+    pub m1p: usize,
+    pub m3p: usize,
+    pub cost: f32,
+    pub fina: f32,
+    pub econ: f32,
+    pub firr: f32,
+    pub eirr: f32,
+	pub ener: f32,
 }
 
-const TT: [&str; 15] = [
-"NO", 
-"PROV", 
-"FDID", 
-"INFRA", 
-"TRX", 
-"M1P", 
-"M3P", 
-"COMM", 
-"PLATF", 
-"IMPL", 
-"OPER", 
-"METER", 
-"OUTAGE", 
-"LOSS", 
-"PHASE",
+const TT: [&str; 9] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
 ];
-
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
@@ -115,54 +110,106 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
         repo.cols.push(t.to_string());
         repo.sums.push(DaVa::None);
     }
-    let cfg = base().config.read().await;
-    let syf = cfg.criteria.start_year_from_2022;
-    let imy = cfg.criteria.implement_year;
-    let opy = cfg.criteria.operate_year;
-    let yrl = syf + imy + opy;
-    let yrl = yrl as usize;
-    //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
-    //let re = Regex::new(r"[A-Z]{3}_[0-9][0-9][VY].*").unwrap();
-    let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
-    for s in 0..wk5prc.ssv.len() {
-        for f in 0..wk5prc.ssv[s].feeders.len() {
-            let mut rw = RepoRow1::default();
-            rw.s = s;
-            rw.f = f;
-            let fd = &wk5prc.ssv[s].feeders[f];
-            if re.is_match(fd.fdid.as_str()) {
-                //if &fd.fdid[5..6] == "V" {
-                if fd.ev.ev_ds > 0.0 && fd.tx.tx_no > 0 {
-                    repo.rows.push(rw);
-                }
-            }
+
+    let mut pvs = Vec::new();
+    let mut pvm = HashMap::<String, Vec<usize>>::new();
+    for (si, ss) in wk5prc.ssv.iter().enumerate() {
+        if let Some(siv) = pvm.get_mut(&ss.prov) {
+            siv.push(si);
+        } else {
+            pvm.insert(ss.prov.to_string(), vec![si]);
+            pvs.push(ss.prov.to_string());
         }
     }
-    repo.rows.sort_by(|a, b| {
-        let a0 = &wk5prc.ssv[a.s].prov;
-        let a1 = &wk5prc.ssv[a.s].ssid;
-        let a2 = &wk5prc.ssv[a.s].feeders[a.f].fdid;
-        let b0 = &wk5prc.ssv[b.s].prov;
-        let b1 = &wk5prc.ssv[b.s].ssid;
-        let b2 = &wk5prc.ssv[b.s].feeders[b.f].fdid;
-		if a0!=b0 {
-			a0.partial_cmp(b0).unwrap()
-		} else {
-			if a1!=b1 {
-				a1.partial_cmp(b1).unwrap()
-			} else {
-				a2.partial_cmp(b2).unwrap()
-			}
+
+	let mut e0 = 0f32;
+    for (si, ss) in wk5prc.ssv.iter().enumerate() {
+		for fi in 0..wk5prc.ssv[si].feeders.len() {
+			let fd = &wk5prc.ssv[si].feeders[fi];
+			e0 += fd.year_load.power_quality.pos_energy;
 		}
-		/*
-        let a1 = &wk5prc.ssv[a.s].feeders[a.f].ev.ev_ds;
-        let b1 = &wk5prc.ssv[b.s].feeders[b.f].ev.ev_ds;
-        b1.partial_cmp(a1).unwrap()
-		*/
-    });
-
-    sum(&mut repo, &wk5prc.ssv);
-
+	}
+	print!("e0: {}\n", e0);
+	
+	let mut sia = 0;
+	let (mut m1,mut m3) = (0,0);
+    for (pi, pv) in pvs.iter().enumerate() {
+		let mut ok = true;
+		if !PRV1.contains(&pv.as_str()) {
+			continue;
+		}
+        if let Some(siv) = pvm.get(pv) {
+			sia += siv.len();
+//print!("pv:{} siv:{}\n", pv, siv.len());
+            let mut rw = RepoRow1::default();
+            rw.prov = pv.to_string();
+            rw.dtx = 0;
+            rw.m1p = 0;
+            rw.m3p = 0;
+            rw.cost = 0f32;
+            rw.fina = 0f32;
+            rw.firr = 0f32;
+			rw.ener = 0f32;
+			//rw.ener = siv.len() as f32;
+            //print!("{}\n", pv);
+			let mut flen = 0.0f32;
+            for si in siv {
+                let ss = &wk5prc.ssv[*si];
+                for fi in 0..wk5prc.ssv[*si].feeders.len() {
+                    let fd = &wk5prc.ssv[*si].feeders[fi];
+					//if fd.firr<0.10f32{
+					//	continue;
+					//}
+					if ss.prov=="สงขลา" && fd.firr<0.10f32{
+						continue;
+					}
+					/*
+					if ss.prov=="นครราชสีมา" && fd.firr<0.10f32{
+						continue;
+					}
+					*/
+					rw.dtx += fd.tx.tx_no;
+					rw.m1p += fd.tx.mt1_no;
+					rw.m3p += fd.tx.mt3_no;
+					m1 += fd.tx.mt1_no;
+					m3 += fd.tx.mt3_no;
+					rw.cost += fd.total_cost_npv;
+					rw.fina += fd.financial_benefit_npv;
+					if !fd.firr.is_nan() {
+						rw.firr += fd.firr;
+					}
+					rw.ener += fd.year_load.power_quality.pos_energy;
+					flen += 1.0f32;
+                }
+            }
+			if flen>0.0f32 {
+				rw.firr /= flen;
+			}
+			if rw.firr > 0f32 {
+				repo.rows.push(rw);
+				for si in siv {
+					let ss = &wk5prc.ssv[*si];
+					for fi in 0..wk5prc.ssv[*si].feeders.len() {
+						let fd = &wk5prc.ssv[*si].feeders[fi];
+						let mut rw2 = RepoRow1::default();
+						rw2.prov = fd.fdid.to_string();
+						rw2.dtx = fd.tx.tx_no;
+						rw2.m1p = fd.tx.mt1_no;
+						rw2.m3p = fd.tx.mt3_no;
+						rw2.cost = fd.total_cost_npv;
+						rw2.fina = fd.financial_benefit_npv;
+						if !fd.firr.is_nan() {
+							rw2.firr = fd.firr;
+						}
+						rw2.ener = fd.year_load.power_quality.pos_energy;
+						//repo.rows.push(rw2);
+					}
+				}
+			}
+        }
+    }
+	print!("ALL feeders: {}\n", sia);
+	print!("METER {} {}\n", m1, m3);
     sp(wk5prc, repo);
 }
 
@@ -174,25 +221,50 @@ impl Report {
         let fd = &ssv[s].feeders[f];
         match c {
             0 => DaVa::USZ(r + 1),
-            1 => DaVa::Text(ss.prov.to_string()),
-            2 => DaVa::Text(fd.fdid5.to_string()),
-            3 => DaVa::F32(fd.infra_invest_year),
-            4 => DaVa::F32(fd.smart_trx_cost),
-            5 => DaVa::F32(fd.smart_m1p_cost),
-            6 => DaVa::F32(fd.smart_m3p_cost),
-            7 => DaVa::F32(fd.comm_cost_year),
-            8 => DaVa::F32(fd.platform_cost),
-            9 => DaVa::F32(fd.implement_cost),
-            10 => DaVa::F32(fd.operation_cost),
-            11 => DaVa::F32(fd.meter_reading_cost),
-            12 => DaVa::F32(fd.outage_operation_cost),
-            13 => DaVa::F32(fd.loss_in_power_line_cost),
-            14 => DaVa::F32(fd.loss_in_phase_balance_cost),
+            1 => DaVa::Text(self.rows[r].prov.to_string()),
+            2 => DaVa::USZ(self.rows[r].dtx),
+            3 => DaVa::USZ(self.rows[r].m1p),
+            4 => DaVa::USZ(self.rows[r].m3p),
+            5 => DaVa::F32(self.rows[r].cost),
+            6 => DaVa::F32(self.rows[r].fina),
+            7 => DaVa::F32(self.rows[r].firr * 100f32),
+            8 => DaVa::F32(self.rows[r].ener),
             // ========
-            n => DaVa::USZ(n),
+            n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }
     }
 }
+
+const PRV1: [&str; 24] = [
+"ระยอง",
+"ชลบุรี",
+"กระบี่",
+"สระแก้ว",
+"พระนครศรีอยุธยา",
+"ฉะเชิงเทรา",
+"สมุทรสาคร",
+"ปทุมธานี",
+"บุรีรัมย์",
+"ปราจีนบุรี",
+"เพชรบุรี",
+"ลพบุรี",
+"เชียงใหม่",
+"สระบุรี",
+"ภูเก็ต",
+"พิษณุโลก",
+"สมุทรสงคราม",
+"ราชบุรี",
+"ขอนแก่น",
+"นครปฐม",
+"สงขลา",
+//"นครราชสีมา",
+"สุราษฎร์ธานี",
+//"กาญจนบุรี",
+"นครสวรรค์",
+"ระนอง",
+//"ตาก",
+//"ตราด",
+];
 
 pub async fn handler() -> ReportTemp {
     ReportTemp::new(base().wk5prc.clone()).await

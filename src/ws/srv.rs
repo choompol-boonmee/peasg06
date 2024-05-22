@@ -14,7 +14,7 @@ pub async fn http_serve() {
     let base = crate::sg::ldp::base();
     let app = Router::new()
         //.route("/", get(root::handler))
-        .route("/", get(web::wk5e::handler))
+        .route("/", get(web::home::handler))
         .route("/wk5a", get(web::wk5a::handler))
         .route("/wk5b", get(web::wk5b::handler))
         .route("/wk5c", get(web::wk5c::handler))
@@ -45,6 +45,11 @@ pub async fn http_serve() {
         .route("/wk5t8", get(web::wk5t8::handler))
         .route("/wk5t9", get(web::wk5t9::handler))
         .route("/wk5t10", get(web::wk5t10::handler))
+        .route("/wk5t11", get(web::wk5t11::handler))
+        .route("/wk5t12", get(web::wk5t12::handler))
+		
+        .route("/wk5x1", get(web::wk5x1::handler))
+		
         .route("/wk5u1/:prov", get(web::wk5u1::handler))
         .route("/city_calc01", get(city_calc01::handler))
         .route("/city_calc02", get(city_calc02::handler))

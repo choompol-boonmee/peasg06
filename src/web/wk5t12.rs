@@ -238,7 +238,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 					}
 				}
 				//dets.sort_by(|a,b| b.fina.partial_cmp(&a.fina).unwrap());
-				dets.sort_by(|a,b| b.prov.partial_cmp(&a.prov).unwrap());
+				dets.sort_by(|a,b| a.prov.partial_cmp(&b.prov).unwrap());
 				repo.rows.append(&mut dets);
 			}
         }

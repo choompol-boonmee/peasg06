@@ -51,6 +51,7 @@ impl ReportTemp {
     }
     pub fn cell(&self, r: &usize, c: &usize) -> String {
         let mut ce = rp(&self.wk).dava(&self.wk.ssv, *r, *c);
+		/*
         if *c == 5 {
             if let DaVa::F32(v) = ce {
                 let s = rp(&self.wk).rows[*r].s;
@@ -65,6 +66,7 @@ impl ReportTemp {
                 ));
             }
         }
+		*/
         match ce {
             DaVa::Text(s) => s,
             DaVa::F32(f) => f.form(),
@@ -96,10 +98,11 @@ pub struct RepoRow1 {
     pub firr: f32,
     pub eirr: f32,
 	pub ener: f32,
+	pub bess: f32,
 }
 
-const TT: [&str; 9] = [
-    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
+const TT: [&str; 10] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "BESS", "COST", "FINA", "FI/CO", "ENER",
 ];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
@@ -146,6 +149,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
             rw.dtx = 0;
             rw.m1p = 0;
             rw.m3p = 0;
+			rw.bess = 0f32;
             rw.cost = 0f32;
             rw.fina = 0f32;
             rw.firr = 0f32;
@@ -174,6 +178,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 					rw.dtx += fd.tx.tx_no;
 					rw.m1p += fd.tx.mt1_no;
 					rw.m3p += fd.tx.mt3_no;
+					rw.bess += fd.solar_storage_series.get(10).unwrap();
 					m1 += fd.tx.mt1_no;
 					m3 += fd.tx.mt3_no;
 					rw.cost += fd.total_cost_npv;
@@ -188,7 +193,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 			if flen>0.0f32 {
 				rw.firr /= flen;
 			}
-			if rw.firr > 0f32 {
+			//if rw.firr > 0f32 {
 				repo.rows.push(rw);
 				for si in siv {
 					let ss = &wk5prc.ssv[*si];
@@ -205,6 +210,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 						rw2.dtx = fd.tx.tx_no;
 						rw2.m1p = fd.tx.mt1_no;
 						rw2.m3p = fd.tx.mt3_no;
+						rw2.bess += fd.solar_storage_series.get(10).unwrap();
 						rw2.cost = fd.total_cost_npv;
 						rw2.fina = fd.financial_benefit_npv;
 						if !fd.firr.is_nan() {
@@ -214,7 +220,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 						//repo.rows.push(rw2);
 					}
 				}
-			}
+			//}
         }
     }
 	print!("ALL feeders: {}\n", sia);
@@ -234,10 +240,11 @@ impl Report {
             2 => DaVa::USZ(self.rows[r].dtx),
             3 => DaVa::USZ(self.rows[r].m1p),
             4 => DaVa::USZ(self.rows[r].m3p),
-            5 => DaVa::F32(self.rows[r].cost),
-            6 => DaVa::F32(self.rows[r].fina),
-            7 => DaVa::F32(self.rows[r].firr * 100f32),
-            8 => DaVa::F32(self.rows[r].ener),
+            5 => DaVa::F32(self.rows[r].bess),
+            6 => DaVa::F32(self.rows[r].cost),
+            7 => DaVa::F32(self.rows[r].fina),
+            8 => DaVa::F32(self.rows[r].firr * 100f32),
+            9 => DaVa::F32(self.rows[r].ener),
             // ========
             n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }

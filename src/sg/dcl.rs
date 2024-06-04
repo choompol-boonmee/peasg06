@@ -69,11 +69,17 @@ pub struct ConfigCriteria {
 	pub platform_cost_per_device: f32, // 1200
 	pub implement_cost_per_device: f32, // 1000
 	pub operation_cost_per_year_device: f32, // 100
+	pub operation_cost_per_year: f32, // 100
 	pub meter_reading_cost_cut: f32,
 	pub economi_discount_rate: f32, // 0.08
 	pub outage_operation_cost_per_hour: f32,
 	pub loss_in_power_line_rate: f32,
 	pub loss_in_phase_balance_rate: f32,
+	
+	pub operate_per_year_m1p: f32,
+	pub operate_per_year_m3p: f32,
+	pub operate_per_year_dtms: f32,
+	pub operate_per_year_bess: f32,
 
     //
     pub power_growth_rate: f32,         //1.217

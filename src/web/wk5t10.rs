@@ -104,10 +104,11 @@ pub struct RepoRow1 {
     pub eirr: f32,
 	pub ener: f32,
 	pub map: String,
+	pub bess: f32,
 }
 
-const TT: [&str; 10] = [
-    "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER", "MAP",
+const TT: [&str; 11] = [
+    "NO", "PROV", "DTX", "M1P", "M3P", "BESS", "COST", "FINA", "FI/CO", "ENER", "MAP",
 ];
 
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
@@ -158,6 +159,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
             rw.fina = 0f32;
             rw.firr = 0f32;
 			rw.ener = 0f32;
+			rw.bess = 0f32;
 			//rw.ener = siv.len() as f32;
             //print!("{}\n", pv);
 			let mut flen = 0.0f32;
@@ -184,6 +186,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 					rw.m3p += fd.tx.mt3_no;
 					m1 += fd.tx.mt1_no;
 					m3 += fd.tx.mt3_no;
+					rw.bess += fd.solar_storage_series.get(10).unwrap();
 					rw.cost += fd.total_cost_npv;
 					rw.fina += fd.financial_benefit_npv;
 					if !fd.firr.is_nan() {
@@ -228,6 +231,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 						rw2.dtx = fd.tx.tx_no;
 						rw2.m1p = fd.tx.mt1_no;
 						rw2.m3p = fd.tx.mt3_no;
+						rw2.bess += fd.solar_storage_series.get(10).unwrap();
 						rw2.cost = fd.total_cost_npv;
 						rw2.fina = fd.financial_benefit_npv;
 						if !fd.firr.is_nan() {
@@ -259,11 +263,12 @@ impl Report {
             2 => DaVa::USZ(self.rows[r].dtx),
             3 => DaVa::USZ(self.rows[r].m1p),
             4 => DaVa::USZ(self.rows[r].m3p),
-            5 => DaVa::F32(self.rows[r].cost),
-            6 => DaVa::F32(self.rows[r].fina),
-            7 => DaVa::F32(self.rows[r].firr * 100f32),
-            8 => DaVa::F32(self.rows[r].ener),
-            9 => DaVa::Text(self.rows[r].map.to_string()),
+            5 => DaVa::F32(self.rows[r].bess),
+            6 => DaVa::F32(self.rows[r].cost),
+            7 => DaVa::F32(self.rows[r].fina),
+            8 => DaVa::F32(self.rows[r].firr * 100f32),
+            9 => DaVa::F32(self.rows[r].ener),
+            10 => DaVa::Text(self.rows[r].map.to_string()),
             // ========
             n => DaVa::F32(fd.financial_benefit_series[n - 4]),
         }

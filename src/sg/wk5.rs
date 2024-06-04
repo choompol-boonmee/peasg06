@@ -456,12 +456,24 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
             fd.smart_trx_cost = cfg.criteria.smart_trx_unit_cost * fd.tx.tx_no as f32;
             fd.smart_m1p_cost = cfg.criteria.smart_m1p_unit_cost * fd.tx.mt1_no as f32;
             fd.smart_m3p_cost = cfg.criteria.smart_m3p_unit_cost * fd.tx.mt3_no as f32;
+			
             let dev = fd.tx.tx_no as f32 + fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32;
             fd.comm_cost_year =
                 dev * cfg.criteria.comm_per_devic_per_month * cfg.criteria.operate_year;
             fd.platform_cost = dev * cfg.criteria.platform_cost_per_device;
             fd.implement_cost = dev * cfg.criteria.implement_cost_per_device;
             fd.operation_cost = dev * cfg.criteria.operation_cost_per_year_device;
+			
+			let dtx = fd.tx.tx_no as f32;
+			let m1p = fd.tx.mt1_no as f32;
+			let m3p = fd.tx.mt3_no as f32;
+			let bes = fd.solar_storage_series.get(10).unwrap();
+			
+            fd.operation_cost = dtx * cfg.criteria.operate_per_year_dtms
+				+ m1p * cfg.criteria.operate_per_year_m1p
+				+ m3p * cfg.criteria.operate_per_year_m3p
+				+ bes * cfg.criteria.operate_per_year_bess;
+			
             fd.meter_reading_cost =
                 fd.tx.mt1_no as f32 * cfg.criteria.meter_reading_cost_cut * 12.0;
             fd.outage_operation_cost =

@@ -122,11 +122,16 @@ pub struct FeederLoad {
     pub comm_cost_year: f32,
     pub platform_cost: f32,
     pub implement_cost: f32,
-    pub operation_cost: f32, // yearly
     pub meter_reading_cost: f32,
     pub outage_operation_cost: f32,
     pub loss_in_power_line_cost: f32,
     pub loss_in_phase_balance_cost: f32,
+
+    pub operation_cost: f32,
+    pub operation_cost_m1p: f32,
+    pub operation_cost_m3p: f32,
+    pub operation_cost_trx: f32,
+    pub operation_cost_ess: f32,
 
     pub infra_invest_year_series: Vec<f32>,
     pub smart_trx_cost_series: Vec<f32>,
@@ -135,11 +140,16 @@ pub struct FeederLoad {
     pub comm_cost_year_series: Vec<f32>,
     pub platform_cost_series: Vec<f32>,
     pub implement_cost_series: Vec<f32>,
-    pub operation_cost_series: Vec<f32>, // yearly
     pub meter_reading_cost_series: Vec<f32>,
     pub outage_operation_cost_series: Vec<f32>,
     pub loss_in_power_line_cost_series: Vec<f32>,
     pub loss_in_phase_balance_cost_series: Vec<f32>,
+
+    pub operation_cost_series: Vec<f32>,
+    pub operation_cost_m1p_series: Vec<f32>,
+    pub operation_cost_m3p_series: Vec<f32>,
+    pub operation_cost_trx_series: Vec<f32>,
+    pub operation_cost_ess_series: Vec<f32>,
 
     pub financial_benefit: f32,
     pub economic_benefit: f32,
@@ -462,17 +472,22 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 dev * cfg.criteria.comm_per_devic_per_month * cfg.criteria.operate_year;
             fd.platform_cost = dev * cfg.criteria.platform_cost_per_device;
             fd.implement_cost = dev * cfg.criteria.implement_cost_per_device;
-            fd.operation_cost = dev * cfg.criteria.operation_cost_per_year_device;
+            //fd.operation_cost = dev * cfg.criteria.operation_cost_per_year_device;
 			
 			let dtx = fd.tx.tx_no as f32;
 			let m1p = fd.tx.mt1_no as f32;
 			let m3p = fd.tx.mt3_no as f32;
 			let bes = fd.solar_storage_series.get(10).unwrap();
+
+            fd.operation_cost_trx = dtx * cfg.criteria.operate_per_year_dtms;
+			fd.operation_cost_m1p = m1p * cfg.criteria.operate_per_year_m1p;
+			fd.operation_cost_m3p = m3p * cfg.criteria.operate_per_year_m3p;
+			fd.operation_cost_ess = bes * cfg.criteria.operate_per_year_bess;
 			
-            fd.operation_cost = dtx * cfg.criteria.operate_per_year_dtms
-				+ m1p * cfg.criteria.operate_per_year_m1p
-				+ m3p * cfg.criteria.operate_per_year_m3p
-				+ bes * cfg.criteria.operate_per_year_bess;
+            fd.operation_cost = fd.operation_cost_trx
+				+ fd.operation_cost_m1p
+				+ fd.operation_cost_m3p
+				+ fd.operation_cost_ess;
 			
             fd.meter_reading_cost =
                 fd.tx.mt1_no as f32 * cfg.criteria.meter_reading_cost_cut * 12.0;
@@ -538,10 +553,22 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 
                 // operation_cost
                 let mut cst = fd.operation_cost;
+                let mut cst_trx = fd.operation_cost_trx;
+                let mut cst_m1p = fd.operation_cost_m1p;
+                let mut cst_m3p = fd.operation_cost_m3p;
+                let mut cst_ess = fd.operation_cost_ess;
                 if i < ops {
                     cst = 0.0;
+                    cst_trx = 0.0;
+                    cst_m1p = 0.0;
+                    cst_m3p = 0.0;
+                    cst_ess = 0.0;
                 }
                 fd.operation_cost_series.push(cst);
+                fd.operation_cost_trx_series.push(cst_trx);
+                fd.operation_cost_m1p_series.push(cst_m1p);
+                fd.operation_cost_m3p_series.push(cst_m3p);
+                fd.operation_cost_ess_series.push(cst_ess);
                 icst += cst;
 
                 // meter_reading_cost

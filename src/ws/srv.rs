@@ -49,6 +49,9 @@ pub async fn http_serve() {
         .route("/wk5t12", get(web::wk5t12::handler))
 		
         .route("/wk5x1", get(web::wk5x1::handler))
+		.route("/wk5x2/:ssid", get(web::wk5x2::handler))
+        .route("/wk5x3", get(web::wk5x3::handler))
+        .route("/wk5x4/:ssid", get(web::wk5x4::handler))
 		
         .route("/wk5u1/:prov", get(web::wk5u1::handler))
         .route("/city_calc01", get(city_calc01::handler))

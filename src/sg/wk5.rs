@@ -62,6 +62,9 @@ pub struct Wk5Proc {
     pub wk5u1: web::wk5u1::Report,
     pub home: web::home::Report,
     pub wk5x1: web::wk5x1::Report,
+    pub wk5x2: web::wk5x2::Report,
+    pub wk5x3: web::wk5x3::Report,
+    pub wk5x4: web::wk5x4::Report,
     pub ssv: Vec<Substation>,
     pub tx: Tranx,
     pub year_load: wk4::YearLoad,
@@ -347,6 +350,9 @@ async fn task1() {
     web::wk5t12::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5u1::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5x1::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5x2::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5x3::make_repo(&mut wk5prc, base().config.clone()).await;
+    web::wk5x4::make_repo(&mut wk5prc, base().config.clone()).await;
     {
         let a_wk5prc = base().wk5prc.clone();
         let mut a_wk5prc = a_wk5prc.write().await;

@@ -8,10 +8,11 @@ ev_growth_rate_start = 0.10
 ev_growth_rate_end = 0.30
 ev_real_charge = 4.0
 
-operate_per_year_m1p = 1000.11
-operate_per_year_m3p = 1500.27
-operate_per_year_dtms = 2000.0 # B per device
-operate_per_year_bess = 1026848.92	# B per MWH
+operate_per_year_m1p = 800.11
+operate_per_year_m3p = 1000.27
+operate_per_year_dtms = 1400.0 # B per device
+operate_per_year_bess = 900000.0	# B per MWH per year
+#operate_per_year_bess = 1026848.92	# B per MWH
 #operate_per_year_bess = 500000.92	# B per MWH
 
 solar_energy_ratio = 0.05

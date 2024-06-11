@@ -53,3 +53,6 @@ pub mod wk5t12;
 pub mod wk5u1;
 pub mod wk5x1;
 pub mod home;
+pub mod wk5x2;
+pub mod wk5x3;
+pub mod wk5x4;

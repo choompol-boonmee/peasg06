@@ -23,4 +23,5 @@ uuid = { version = "1.7.0", features = ["v4"] }
 shapefile = "0.4.0"
 dbase = "0.3.0"
 financial = "1.1.5"
+micromath = "2.1.0"
 

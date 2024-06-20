@@ -13,7 +13,9 @@ async fn main() {
         "P2" => crate::sg::init2::run().await,
         "P3" => crate::sg::init3::run().await,
         "P4" => crate::sg::tranx::run().await,
-        "P5" => crate::sg::mvline::read().await,
+        "I1" => crate::sg::mvline::read().await,
+        "I2" => crate::sg::mvline::read_trans_lv().await,
+        "I3" => crate::sg::mvline::read_lv_line().await,
         _ => print!("NG\n"),
     }
 }

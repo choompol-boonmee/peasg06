@@ -353,11 +353,91 @@ async fn task1() {
     web::wk5x2::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5x3::make_repo(&mut wk5prc, base().config.clone()).await;
     web::wk5x4::make_repo(&mut wk5prc, base().config.clone()).await;
+	prov_proc(&mut wk5prc);
     {
         let a_wk5prc = base().wk5prc.clone();
         let mut a_wk5prc = a_wk5prc.write().await;
         *a_wk5prc = wk5prc;
     }
+}
+
+const PRV1: [&str; 24] = [
+"ระยอง",
+"ชลบุรี",
+"กระบี่",
+"สระแก้ว",
+"พระนครศรีอยุธยา",
+"ฉะเชิงเทรา",
+"สมุทรสาคร",
+"ปทุมธานี",
+"บุรีรัมย์",
+"ปราจีนบุรี",
+"เพชรบุรี",
+"ลพบุรี",
+"เชียงใหม่",
+"สระบุรี",
+"ภูเก็ต",
+"พิษณุโลก",
+"สมุทรสงคราม",
+"ราชบุรี",
+"ขอนแก่น",
+"นครปฐม",
+"สงขลา",
+"สุราษฎร์ธานี",
+"นครสวรรค์",
+"ระนอง",
+];
+
+fn prov_proc(wk5prc: &mut Wk5Proc) {
+	let mut ss_mp_ls = HashMap::<String,Vec::<usize>>::new();
+    for si in 0..wk5prc.ssv.len() {
+		let prv = wk5prc.ssv[si].prov.to_string();
+		if let Some(ls) = ss_mp_ls.get_mut(&prv) {
+			ls.push(si);
+		} else {
+			ss_mp_ls.insert(prv, vec![si]);
+		}
+	}
+	let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
+	let mut css0 = 0.0;
+	for pv in PRV1 {
+		let (mut txn, mut m1p, mut m3p, mut esn) = (0, 0, 0, 0.0);
+		let (mut txc, mut m1c, mut m3c, mut esc) = (0.0, 0.0, 0.0, 0.0);
+		let (mut plt, mut imp, mut ope, mut com) = (0.0, 0.0, 0.0, 0.0);
+		let (mut cst) = (0.0);
+		if let Some(ls) = ss_mp_ls.get(pv) {
+			for s in ls {
+				for f in 0..wk5prc.ssv[*s].feeders.len() {
+					let fd = &wk5prc.ssv[*s].feeders[f];
+					if re.is_match(fd.fdid.as_str()) {
+						if fd.ev.ev_ds > 0.0 && fd.tx.tx_no > 0 {
+							txn += fd.tx.tx_no;
+							m1p += fd.tx.mt1_no;
+							m3p += fd.tx.mt3_no;
+							esn += fd.solar_storage_series[16];
+							for i in 0..17 {
+								txc += fd.smart_trx_cost_series[i];
+								m1c += fd.smart_m1p_cost_series[i];
+								m3c += fd.smart_m3p_cost_series[i];
+								esc += fd.solar_storage_cost_series[i];
+								plt += fd.platform_cost_series[i];
+								imp += fd.implement_cost_series[i];
+								ope += fd.operation_cost_series[i];
+								com += fd.comm_cost_year_series[i];
+								cst += fd.total_cost_series[i];
+							}
+						}
+					}
+				}
+			}
+		}
+		let css = txc+m1c+m3c+esc+plt+imp+ope+com;
+		print!(r###"
+{},{},{},{},{},{},{},{},{},{},{},{},{},{}"###
+		, pv, txn, m1p, m3p, esn,  txc, m1c, m3c, esc, plt, imp, ope, com, css);
+		css0 += css;
+	}
+	print!("COST {}\n", css0);
 }
 
 pub async fn power(ssv: &mut Vec<Substation>) {
@@ -413,7 +493,11 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 let sop = soe / (365.0 * sot);
                 fd.solar_power_series.push(sop);
                 let dye = sop * sot;
+				
                 fd.solar_day_energy_series.push(dye);
+
+				let dye = cfg.criteria.solar_bess_capacity_ratio * dye;
+				
                 let ese = if dye > bmx { bmx } else { dye };
                 let ste = ese;
                 let ese = if i >= yr0 { ese } else { 0.0 };
@@ -463,6 +547,8 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
             txno += fd.tx.tx_no as f32;
         }
     }
+	print!("=== BESS PER SOLAR === {}\n", cfg.criteria.solar_bess_capacity_ratio);
+	
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
             let mut fd = &mut wk5prc.ssv[si].feeders[fi];
@@ -483,7 +569,8 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 			let dtx = fd.tx.tx_no as f32;
 			let m1p = fd.tx.mt1_no as f32;
 			let m3p = fd.tx.mt3_no as f32;
-			let bes = fd.solar_storage_series.get(10).unwrap();
+			//let bes = fd.solar_storage_series.get(10).unwrap();
+			let bes = fd.solar_storage_series.get(16).unwrap().clone();
 
             fd.operation_cost_trx = dtx * cfg.criteria.operate_per_year_dtms;
 			fd.operation_cost_m1p = m1p * cfg.criteria.operate_per_year_m1p;

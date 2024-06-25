@@ -96,6 +96,8 @@ pub struct ConfigCriteria {
     pub bess_energy_max: f32,
 	pub bess_power_max: f32, // 0.80 MW
     //pub solar_energy_ratio: f64,
+	
+	pub solar_bess_capacity_ratio: f32,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

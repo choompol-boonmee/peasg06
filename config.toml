@@ -7,9 +7,11 @@ smart_m1p_unit_cost = 3650.0 # single phase meter price
 smart_m3p_unit_cost = 4500.0 # three phase meter price
 ev_car_all_reg = 500219.0
 ev_car_reg_cnt = 76366.0 # https://www.posttoday.com/smart-city/704704
+#ev_growth_rate_start = 0.10
+#ev_growth_rate_end = 0.30
 ev_growth_rate_start = 0.10
-ev_growth_rate_end = 0.30
-ev_real_charge = 4.0
+ev_growth_rate_end = 0.20
+ev_real_charge = 3.0
 
 operate_per_year_m1p = 800.11
 operate_per_year_m3p = 1000.27
@@ -20,8 +22,9 @@ operate_per_year_bess = 900000.0	# B per MWH per year
 #operate_per_year_bess = 500000.92	# B per MWH
 
 #solar_bess_capacity_ratio = 0.01
-solar_bess_capacity_ratio = 0.1
-#solar_bess_capacity_ratio = 0.25
+#solar_bess_capacity_ratio = 0.1
+solar_bess_capacity_ratio = 0.25
+meter_plc_per_sim_ratio = 7.0
 
 solar_energy_ratio = 0.05
 bess_energy_max = 20.0

@@ -559,7 +559,10 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
             fd.smart_m1p_cost = cfg.criteria.smart_m1p_unit_cost * fd.tx.mt1_no as f32;
             fd.smart_m3p_cost = cfg.criteria.smart_m3p_unit_cost * fd.tx.mt3_no as f32;
 			
-            let dev = fd.tx.tx_no as f32 + fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32;
+            //let dev = fd.tx.tx_no as f32 + fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32;
+            let dev = fd.tx.tx_no as f32 + fd.operation_cost_ess
+				+ (fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32) / cfg.criteria.meter_plc_per_sim_ratio;
+			
             fd.comm_cost_year =
                 dev * cfg.criteria.comm_per_devic_per_month * cfg.criteria.operate_year;
             fd.platform_cost = dev * cfg.criteria.platform_cost_per_device;

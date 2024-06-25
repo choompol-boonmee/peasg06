@@ -98,6 +98,7 @@ pub struct ConfigCriteria {
     //pub solar_energy_ratio: f64,
 	
 	pub solar_bess_capacity_ratio: f32,
+	pub meter_plc_per_sim_ratio: f32,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

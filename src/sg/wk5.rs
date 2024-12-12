@@ -22,6 +22,7 @@ use std::sync::{Arc, OnceLock};
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
 use tokio::sync::RwLock;
+use crate::sg::prc3::ld_p3_prvs;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Wk5Proc {
@@ -95,21 +96,26 @@ pub struct FeederLoad {
     pub year_re: wk4::YearLoad,
     pub year_ev: wk4::YearLoad,
     pub outage_hour: f64,
+
     pub year_load: wk4::YearLoad,
     pub last_year_load: wk4::YearLoad,
     pub trans: Vec<ldp::FeederTranx>,
+    
     pub tx: Tranx,
     pub para1: EvalPara1,
     pub ev: EvDistCalc,
+
     pub target_year_solar_energy: f32,
     pub target_solar_power: f32,
     pub target_solar_energy_storage: f32,
+
     pub solar_energy_series: Vec<f32>,
     pub solar_power_series: Vec<f32>,
     pub solar_day_energy_series: Vec<f32>,
     pub solar_storage_series: Vec<f32>,
     pub solar_storage_cost_series: Vec<f32>,
     pub solar_revenue_series: Vec<f32>,
+
     pub ev_car_series: Vec<f32>,
     pub ev_power_series: Vec<f32>,
     pub ev_energy_series: Vec<f32>,
@@ -361,7 +367,8 @@ async fn task1() {
     }
 }
 
-const PRV1: [&str; 24] = [
+//const PRV1: [&str; 21] = [
+const PRV1: [&str; 25] = [
 "ระยอง",
 "ชลบุรี",
 "กระบี่",
@@ -373,22 +380,33 @@ const PRV1: [&str; 24] = [
 "บุรีรัมย์",
 "ปราจีนบุรี",
 "เพชรบุรี",
-"ลพบุรี",
 "เชียงใหม่",
 "สระบุรี",
-"ภูเก็ต",
 "พิษณุโลก",
-"สมุทรสงคราม",
 "ราชบุรี",
 "ขอนแก่น",
 "นครปฐม",
 "สงขลา",
 "สุราษฎร์ธานี",
 "นครสวรรค์",
+"นครราชสีมา",
+
+"ลพบุรี",
+"ภูเก็ต",
 "ระนอง",
+"สมุทรสงคราม",
 ];
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct GridBudget {
+	pub txn: i32, pub m1n: i32, pub m3n: i32, pub esn: f32,
+	pub txc: f32, pub m1c: f32, pub m3c: f32, pub esc: f32,
+	pub plt: f32, pub imp: f32, pub ope: f32, pub com: f32,
+	pub cst: f32, pub fin: f32, pub irr: f64, pub css: f32,
+}
+
 fn prov_proc(wk5prc: &mut Wk5Proc) {
+    let mut fd_es_m = HashMap::<String,f32>::new();
 	let mut ss_mp_ls = HashMap::<String,Vec::<usize>>::new();
     for si in 0..wk5prc.ssv.len() {
 		let prv = wk5prc.ssv[si].prov.to_string();
@@ -400,21 +418,30 @@ fn prov_proc(wk5prc: &mut Wk5Proc) {
 	}
 	let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
 	let mut css0 = 0.0;
+
+    //let prvs = ld_p3_prvs();
+    //for pv in prvs {
 	for pv in PRV1 {
-		let (mut txn, mut m1p, mut m3p, mut esn) = (0, 0, 0, 0.0);
+		let (mut txn, mut m1n, mut m3n, mut esn) = (0, 0, 0, 0.0);
 		let (mut txc, mut m1c, mut m3c, mut esc) = (0.0, 0.0, 0.0, 0.0);
 		let (mut plt, mut imp, mut ope, mut com) = (0.0, 0.0, 0.0, 0.0);
-		let (mut cst) = (0.0);
+		let (mut cst, mut fin, mut irr, mut css) = (0.0, 0.0, 0.0, 0.0);
+		let mut cash = [0.0f64; 17];
 		if let Some(ls) = ss_mp_ls.get(pv) {
+		//if let Some(ls) = ss_mp_ls.get(&pv) {
 			for s in ls {
 				for f in 0..wk5prc.ssv[*s].feeders.len() {
 					let fd = &wk5prc.ssv[*s].feeders[f];
 					if re.is_match(fd.fdid.as_str()) {
 						if fd.ev.ev_ds > 0.0 && fd.tx.tx_no > 0 {
-							txn += fd.tx.tx_no;
-							m1p += fd.tx.mt1_no;
-							m3p += fd.tx.mt3_no;
+							txn += fd.tx.tx_no as i32;
+							m1n += fd.tx.mt1_no as i32;
+							m3n += fd.tx.mt3_no as i32;
 							esn += fd.solar_storage_series[16];
+                            let fd1 = fd.fdid.to_string();
+                            let fd5 = format!("{}{}", &fd1[0..3], &fd1[4..6]);
+                            fd_es_m.insert(fd5.clone(), fd.solar_storage_series[16]);
+println!("{}: {} = {}", fd5, fd.fdid, fd.solar_storage_series[16]);
 							for i in 0..17 {
 								txc += fd.smart_trx_cost_series[i];
 								m1c += fd.smart_m1p_cost_series[i];
@@ -425,19 +452,45 @@ fn prov_proc(wk5prc: &mut Wk5Proc) {
 								ope += fd.operation_cost_series[i];
 								com += fd.comm_cost_year_series[i];
 								cst += fd.total_cost_series[i];
+								fin += fd.financial_benefit_series[i];
+								cash[i] -= fd.total_cost_series[i] as f64;
+								cash[i] += fd.financial_benefit_series[i] as f64;
 							}
 						}
 					}
 				}
 			}
 		}
-		let css = txc+m1c+m3c+esc+plt+imp+ope+com;
+		irr = financial::irr(&cash, None).unwrap();
+		css = txc + m1c + m3c + esc + plt + imp + ope + com;
 		print!(r###"
-{},{},{},{},{},{},{},{},{},{},{},{},{},{}"###
-		, pv, txn, m1p, m3p, esn,  txc, m1c, m3c, esc, plt, imp, ope, com, css);
+{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}"###
+		, pv, txn, m1n, m3n, esn,  txc, m1c, m3c, esc
+		, plt, imp, ope, com, css, fin, irr);
+		GridBudget { 
+			txn, m1n, m3n, esn, 
+			txc, m1c, m3c, esc, 
+			plt, imp, ope, com,
+			css, fin, irr, cst,
+			..Default::default() };
 		css0 += css;
 	}
-	print!("COST {}\n", css0);
+	print!("\n");
+	//print!("COST {}\n", css0);
+    let file = format!("{}/fd_es_m.bin", crate::sg::imp::data_dir());
+    if let Ok(ser) = bincode::serialize(&fd_es_m) { std::fs::write(file, ser).unwrap(); }
+    ld_fd_es_m();
+}
+
+
+pub fn ld_fd_es_m() -> HashMap::<String,f32> {
+    if let Ok(f) = File::open(crate::sg::ldp::res("fd_es_m.bin")) {
+        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String,f32>>(BufReader::new(f)) {
+            println!("fd es: {}", dt.len());
+            return dt;
+        }
+    }
+    HashMap::<String,f32>::new()
 }
 
 pub async fn power(ssv: &mut Vec<Substation>) {
@@ -559,14 +612,15 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
             fd.smart_m1p_cost = cfg.criteria.smart_m1p_unit_cost * fd.tx.mt1_no as f32;
             fd.smart_m3p_cost = cfg.criteria.smart_m3p_unit_cost * fd.tx.mt3_no as f32;
 			
-            //let dev = fd.tx.tx_no as f32 + fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32;
-            let dev = fd.tx.tx_no as f32 + fd.operation_cost_ess
+            let dev1 = fd.tx.tx_no as f32 + fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32;
+            let dev2 = fd.tx.tx_no as f32 + fd.operation_cost_ess
 				+ (fd.tx.mt3_no as f32 + fd.tx.mt1_no as f32) / cfg.criteria.meter_plc_per_sim_ratio;
+//			println!("dev1:{}, dev2:{} ess:{}", dev1, dev2, fd.operation_cost_ess);
 			
             fd.comm_cost_year =
-                dev * cfg.criteria.comm_per_devic_per_month * cfg.criteria.operate_year;
-            fd.platform_cost = dev * cfg.criteria.platform_cost_per_device;
-            fd.implement_cost = dev * cfg.criteria.implement_cost_per_device;
+                dev2 * cfg.criteria.comm_per_devic_per_month * cfg.criteria.operate_year;
+            fd.platform_cost = dev1 * cfg.criteria.platform_cost_per_device;
+            fd.implement_cost = dev1 * cfg.criteria.implement_cost_per_device;
             //fd.operation_cost = dev * cfg.criteria.operation_cost_per_year_device;
 			
 			let dtx = fd.tx.tx_no as f32;

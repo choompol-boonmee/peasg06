@@ -22,8 +22,8 @@ operate_per_year_bess = 900000.0	# B per MWH per year
 #operate_per_year_bess = 500000.92	# B per MWH
 
 #solar_bess_capacity_ratio = 0.01
-#solar_bess_capacity_ratio = 0.1
-solar_bess_capacity_ratio = 0.25
+solar_bess_capacity_ratio = 0.1
+#solar_bess_capacity_ratio = 0.25
 meter_plc_per_sim_ratio = 7.0
 
 solar_energy_ratio = 0.05

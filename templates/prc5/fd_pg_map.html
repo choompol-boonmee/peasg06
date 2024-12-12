@@ -10,12 +10,12 @@ img {max-width: 100%; height: auto;}
 .imagemap .area {display: block; position: absolute; transition: box-shadow 0.15s ease-in-out;}
 .imagemap .area:hover {box-shadow: 0px 0px 1vw rgba(0,0,0,0.5);}
 </style>
-<img src="/fd_png_map/{{fdid}}" usemap="#image-map"/>
+<img src="../fd_png_map/{{fdid}}" usemap="#image-map"/>
 {{ pop }}
 </div>
 <div>
 feed: {{fdid}}
-<a href="/fd_pg_ym/{{fdid}}/Y">link</a>
+<a href="../fd_pg_ym/{{fdid}}/Y">link</a>
 </div>
 
 <style>
@@ -44,7 +44,7 @@ table, th, td {
         <td>{{tr.tx_own}}</td>
         <td>{{tr.mt_1_ph}}</td>
         <td>{{tr.mt_3_ph}}</td>
-        <td><a href="/tr_pg_map/{{fdid}}/{{tr.tx_id}}" target="TR_MAP">map</a></td>
+        <td><a href="../tr_pg_map/{{fdid}}/{{tr.tx_id}}" target="TR_MAP">map</a></td>
         {% if tr.gm.len()>0 %}
         <td><a href="{{tr.gm}}" target="gmap">gmap</a></td>
         {% endif %}

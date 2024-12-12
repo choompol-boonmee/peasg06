@@ -384,10 +384,10 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
             let mut poptxt = String::from(pv);
 
             if let Some(xp) = pv_pw_mp.get(pv) {
-                poptxt = format!("{}, - {:.2}mw", pv, xp);
+                poptxt = format!("{}, - {:.2}mw", pv, xp.separate_with_commas());
                 if let Some(rev) = pv_re_mp.get(pv) {
                     for (s, y, p) in rev {
-                        write!(poptxt, "\n{} in {}", p, y);
+                        write!(poptxt, "\nกำลัง {} mw ในปี พ.ศ. {}", p.separate_with_commas(), y);
                     }
                 }
             }

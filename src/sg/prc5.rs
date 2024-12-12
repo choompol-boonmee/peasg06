@@ -1929,7 +1929,7 @@ fn th_pop_map_gen() -> String {
                         if cos.len()>0 { write!(cos, ","); }
                         write!(cos, "{},{}", pn.x, pn.y);
                     }
-                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", pv, pv, pv, cos);
+                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/p54/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", pv, pv, pv, cos);
                 }
             }
         }
@@ -1961,31 +1961,28 @@ pub async fn prc54() -> Result<(), Box<dyn std::error::Error>> {
     let prv = pv_sub_init();
     let base = crate::sg::ldp::base();
     let app = Router::new()
-        .route("/", get(prvs_pg))
-        .route("/h3", get(handler3))
-        .route("/h4", get(handler4))
-        .route("/h5", get(handler5))
-        .route("/pv_dw/:pvnm", get(pv_dw))
-        .route("/pv_dw2/:pvnm", get(pv_dw2))
-        .route("/pv/:pvnm", get(pv_dw2))
-        .route("/pv_pg_ym/:pvnm/:ym", get(pv_pg_ym))
-        .route("/pv_png_ym/:pvnm/:ym", get(pv_png_ym))
-        .route("/sb_pg_ym/:pvnm/:ym", get(sb_pg_ym))
-        .route("/sb_png_ym/:pvnm/:ym", get(sb_png_ym))
-        .route("/pv_pg_sub_map/:pvnm", get(pv_pg_sub_map))
-        .route("/pv_png_sub_map/:pvnm", get(pv_png_sub_map))
-        .route("/fd_pg_ym/:fdid/:ym", get(fd_pg_ym))
-        .route("/fd_png_ym/:fdid/:ym", get(fd_png_ym))
-        .route("/fd_pg_map/:fdid", get(fd_pg_map))
-        .route("/fd_png_map/:fdid", get(fd_png_map))
-        .route("/tr_pg_map/:fdid/:trid", get(tr_pg_map))
-        .route("/tr_png_map/:fdid/:trid", get(tr_png_map))
-        .route("/th_png_map", get(th_png_map))
-        .route("/th_pg_map", get(th_pg_map))
-        .route("/ev_png_map/:yr", get(crate::sg::prc7::ev_png_map))
-        .route("/ev_pg_map/:yr", get(crate::sg::prc7::ev_pg_map))
-        .route("/re_png_map/:yr", get(crate::sg::re_pg_map::re_png_map))
-        .route("/re_pg_map/:yr", get(crate::sg::re_pg_map::re_pg_map))
+        .route("/p54/", get(prvs_pg))
+        .route("/p54/pv_dw/:pvnm", get(pv_dw))
+        .route("/p54/pv_dw2/:pvnm", get(pv_dw2))
+        .route("/p54/pv/:pvnm", get(pv_dw2))
+        .route("/p54/pv_pg_ym/:pvnm/:ym", get(pv_pg_ym))
+        .route("/p54/pv_png_ym/:pvnm/:ym", get(pv_png_ym))
+        .route("/p54/sb_pg_ym/:pvnm/:ym", get(sb_pg_ym))
+        .route("/p54/sb_png_ym/:pvnm/:ym", get(sb_png_ym))
+        .route("/p54/pv_pg_sub_map/:pvnm", get(pv_pg_sub_map))
+        .route("/p54/pv_png_sub_map/:pvnm", get(pv_png_sub_map))
+        .route("/p54/fd_pg_ym/:fdid/:ym", get(fd_pg_ym))
+        .route("/p54/fd_png_ym/:fdid/:ym", get(fd_png_ym))
+        .route("/p54/fd_pg_map/:fdid", get(fd_pg_map))
+        .route("/p54/fd_png_map/:fdid", get(fd_png_map))
+        .route("/p54/tr_pg_map/:fdid/:trid", get(tr_pg_map))
+        .route("/p54/tr_png_map/:fdid/:trid", get(tr_png_map))
+        .route("/p54/th_png_map", get(th_png_map))
+        .route("/p54/th_pg_map", get(th_pg_map))
+        .route("/p54/ev_png_map/:yr", get(crate::sg::prc7::ev_png_map))
+        .route("/p54/ev_pg_map/:yr", get(crate::sg::prc7::ev_pg_map))
+        .route("/p54/re_png_map/:yr", get(crate::sg::re_pg_map::re_png_map))
+        .route("/p54/re_pg_map/:yr", get(crate::sg::re_pg_map::re_pg_map))
         ;
     
     let lisn = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();

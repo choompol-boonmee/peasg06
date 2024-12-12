@@ -3,11 +3,11 @@
 {% block body %}
 สถานีไฟฟ้า จังหวัด {{pvnm}}
 <div>
-    <img src="/pv_png_sub_map/{{pvnm}}"/>
+    <img src="../pv_png_sub_map/{{pvnm}}"/>
 </div>
 <div>
 prov: {{pvnm}}
-<a href="/pv_pg_ym/{{pvnm}}/Y" target="map">load 2022</a>
+<a href="../pv_pg_ym/{{pvnm}}/Y" target="map">load 2022</a>
 </div>
 <style>
 table, th, td {
@@ -34,7 +34,7 @@ table, th, td {
         <td>{{sb.3}}</td>
         <td>{{sb.4}}</td>
         <td>{{sb.5}}</td>
-        <td><a href="/sb_pg_ym/{{sb.0}}/Y" target="sub map">link</a></td>
+        <td><a href="../sb_pg_ym/{{sb.0}}/Y" target="sub map">link</a></td>
         <td><a href="{{sb.6}}" target="sub map">gmap</a></td>
     </tr>
 {% endfor %}

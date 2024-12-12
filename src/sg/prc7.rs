@@ -361,14 +361,14 @@ fn ev_pop_map_gen(yr: String) -> MapPopInfo {
 
                     if y==yrid {
                         poptxt = format!("{} - {:.2}%", pv, pc);
-                        write!(poptxt, "\nรถยนต์ไฟฟ้าใหม่: {} คัน", pv_ev_la_yr.ceil());
-                        write!(poptxt, "\nรถยนต์สะสม: {} คัน", pv_ev_ac_no.ceil());
-                        write!(poptxt, "\nกำลังอัดประจุ: {} mw", pv_ev_mw.ceil());
-                        write!(poptxt, "\nพลังงานต่อปี: {} mwh", pv_ev_mwh.ceil());
-                        write!(poptxt, "\nรถบรรทุก+บัสใหม่: {} คัน", pv_et_la_yr.ceil());
-                        write!(poptxt, "\nบรรทุก+บัสสะสม: {} คัน", pv_et_ac_no.ceil());
-                        write!(poptxt, "\nกำลังอัดประจุ: {} mw", pv_et_mw.ceil());
-                        write!(poptxt, "\nพลังงานต่อปี: {} mwh", pv_et_mwh.ceil());
+                        write!(poptxt, "\nรถยนต์ไฟฟ้าใหม่: {} คัน", pv_ev_la_yr.ceil().separate_with_commas());
+                        write!(poptxt, "\nรถยนต์สะสม: {} คัน", pv_ev_ac_no.ceil().separate_with_commas());
+                        write!(poptxt, "\nกำลังอัดประจุ: {} mw", pv_ev_mw.ceil().separate_with_commas());
+                        write!(poptxt, "\nพลังงานต่อปี: {} mwh", pv_ev_mwh.ceil().separate_with_commas());
+                        write!(poptxt, "\nรถบรรทุก+บัสใหม่: {} คัน", pv_et_la_yr.ceil().separate_with_commas());
+                        write!(poptxt, "\nบรรทุก+บัสสะสม: {} คัน", pv_et_ac_no.ceil().separate_with_commas());
+                        write!(poptxt, "\nกำลังอัดประจุ: {} mw", pv_et_mw.ceil().separate_with_commas());
+                        write!(poptxt, "\nพลังงานต่อปี: {} mwh", pv_et_mwh.ceil().separate_with_commas());
                         
                         pv_ev_la_yr0 += pv_ev_la_yr;
                         pv_ev_ac_no0 += pv_ev_ac_no;

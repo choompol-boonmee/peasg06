@@ -39,7 +39,11 @@ table, th, td {
 {% for tr in trans %}
     <tr>
         <td>{{tr.no}}</td>
-        <td>{{tr.tx_id}}</td>
+        <td>
+            <a href="../fe_tr_pg_map/{{fdid}}/{{tr.tx_id}}">
+            {{tr.tx_id}}
+            </a>
+        </td>
         <td>{{tr.tx_power}}</td>
         <td>{{tr.tx_own}}</td>
         <td>{{tr.mt_1_ph}}</td>

@@ -1983,6 +1983,8 @@ pub async fn prc54() -> Result<(), Box<dyn std::error::Error>> {
         .route("/p54/ev_pg_map/:yr", get(crate::sg::prc7::ev_pg_map))
         .route("/p54/re_png_map/:yr", get(crate::sg::re_pg_map::re_png_map))
         .route("/p54/re_pg_map/:yr", get(crate::sg::re_pg_map::re_pg_map))
+        .route("/p54/fe_tr_pg_map/:fdid/:trid", get(crate::sg::fe_tr_map::fe_tr_pg_map))
+        .route("/p54/fe_tr_png_map/:fdid/:trid", get(crate::sg::fe_tr_map::fe_tr_png_map))
         ;
     
     let lisn = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();

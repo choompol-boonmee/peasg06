@@ -32,3 +32,5 @@ pub mod prc6;
 pub mod prc7;
 pub mod re_pg_map;
 pub mod fe_tr_map;
+pub mod prc8;
+

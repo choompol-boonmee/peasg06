@@ -51,6 +51,7 @@ impl NumForm for usize {
     }
 }
 
+#[allow(dead_code)]
 pub fn repo_sum(repo: &mut wk5g::Report, ssv: &Vec<wk5::Substation>) {
     if repo.rows.len() > 0 {
         repo.sums[0] = DaVa::None;
@@ -64,10 +65,10 @@ pub fn repo_sum(repo: &mut wk5g::Report, ssv: &Vec<wk5::Substation>) {
                 _ => DaVa::None,
             };
         }
-        let mut txno = 0;
-        for (ri, rr) in repo.rows.iter().enumerate() {
-            if let DaVa::USZ(v) = repo.dava(ssv, ri, 5) {
-                txno += v;
+        //let mut txno = 0;
+        for (ri, _rr) in repo.rows.iter().enumerate() {
+            if let DaVa::USZ(_v) = repo.dava(ssv, ri, 5) {
+                //txno += v;
             }
 
             for ci in 0..repo.cols.len() {

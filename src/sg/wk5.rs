@@ -1,7 +1,10 @@
 pub async fn task() {
     task1().await;
 }
+
+#[allow(dead_code)]
 pub async fn save_wk5prc() {}
+#[allow(dead_code)]
 pub async fn load_wk5prc() {}
 
 use crate::sg::ldp::base;
@@ -10,19 +13,19 @@ use crate::sg::load::load_sbgismp;
 use crate::sg::{dcl, ldp, wk4};
 use crate::web;
 //use crate::web::{wk5, wk5a};
-use askama::Template;
-use askama_axum;
+//use askama::Template;
+//use askama_axum;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
+use std::cmp::{/*Eq, Ord, PartialEq,*/ PartialOrd};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::{Arc, OnceLock};
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+use std::sync::{Arc, /*OnceLock*/};
+//use tokio::sync::mpsc;
+//use tokio::sync::oneshot;
 use tokio::sync::RwLock;
-use crate::sg::prc3::ld_p3_prvs;
+//use crate::sg::prc3::ld_p3_prvs;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Wk5Proc {
@@ -217,12 +220,12 @@ async fn task1() {
     {
         let mut prov_set = HashSet::new();
         let mut wk4prc = wk4prc.write().await;
-        let mut txno = 0;
+        //let mut txno = 0;
         let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
         let (mut sum1, mut sum2) = (0.0, 0.0);
-        let cfg = base().config.clone();
-        let cfg = cfg.read().await;
-        let stw = cfg.criteria.solar_time_window;
+        //let cfg = base().config.clone();
+        //let cfg = cfg.read().await;
+        //let stw = cfg.criteria.solar_time_window;
         for ss in &mut wk4prc.ssv {
             sum1 += ss.year_load.power_quality.pos_energy;
             sum2 += ss.last_year_load.power_quality.pos_energy;
@@ -243,14 +246,14 @@ async fn task1() {
                 //let fdid5 = fd.feed[0..6].to_string();
                 let fdid5 = fd.feed[0..7].to_string();
                 if let Some(fd2) = fdmp.get_mut(&fdid5) {
-                    let (mut c1, mut c2) = (0, 0);
+                    //let (mut c1, mut c2) = (0, 0);
                     for di in 0..fd.year_load.loads.len() {
                         for hi in 0..fd.year_load.loads[di].load.len() {
                             let mut dd = dcl::LoadProfVal::Value(0.0);
                             if let dcl::LoadProfVal::Value(v) = &fd.year_load.loads[di].load[hi] {
                                 dd = dcl::LoadProfVal::Value(*v);
                             } else {
-                                c1 += 1;
+                                //c1 += 1;
                             }
                             if let (dcl::LoadProfVal::Value(d2), dcl::LoadProfVal::Value(d1)) = (
                                 &fd2.year_load.loads[di].load[hi],
@@ -258,7 +261,7 @@ async fn task1() {
                             ) {
                                 dd = dcl::LoadProfVal::Value(d1 + d2);
                             } else {
-                                c2 += 1;
+                                //c2 += 1;
                             }
                             fd2.year_load.loads[di].load[hi] = dd;
                         }
@@ -274,7 +277,7 @@ async fn task1() {
                     fd2.trans = fd.trans.clone();
                     for tx in &fd.trans {
                         fd2.tx.tx_no += 1;
-                        txno += 1;
+                        //txno += 1;
                         if tx.tx_own == "P" {
                             fd2.tx.tx_pea += 1;
                         } else {
@@ -287,7 +290,7 @@ async fn task1() {
                     for di in 0..fd.year_load.loads.len() {
                         for hi in 0..fd.year_load.loads[di].load.len() {
                             match fd.year_load.loads[di].load[hi] {
-                                dcl::LoadProfVal::Value(y) => {}
+                                dcl::LoadProfVal::Value(_y) => {}
                                 _ => {
                                     fd2.year_load.loads[di].load[hi] = dcl::LoadProfVal::Value(0.0)
                                 }
@@ -298,7 +301,7 @@ async fn task1() {
                 };
             }
             let mut fds: Vec<Box<FeederLoad>> =
-                fdmp.into_iter().map(|(k, v)| Box::new(v)).collect();
+                fdmp.into_iter().map(|(_k, v)| Box::new(v)).collect();
             fds.sort_by(|a, b| a.fdid5.partial_cmp(&b.fdid5).unwrap());
             ss2.feeders = fds;
             wk5prc.ssv.push(ss2);
@@ -417,7 +420,7 @@ fn prov_proc(wk5prc: &mut Wk5Proc) {
 		}
 	}
 	let re = Regex::new(r"..._[0-9][0-9].+").unwrap();
-	let mut css0 = 0.0;
+	//let mut css0 = 0.0;
 
     //let prvs = ld_p3_prvs();
     //for pv in prvs {
@@ -425,7 +428,7 @@ fn prov_proc(wk5prc: &mut Wk5Proc) {
 		let (mut txn, mut m1n, mut m3n, mut esn) = (0, 0, 0, 0.0);
 		let (mut txc, mut m1c, mut m3c, mut esc) = (0.0, 0.0, 0.0, 0.0);
 		let (mut plt, mut imp, mut ope, mut com) = (0.0, 0.0, 0.0, 0.0);
-		let (mut cst, mut fin, mut irr, mut css) = (0.0, 0.0, 0.0, 0.0);
+		let (mut cst, mut fin, /*mut*/ _irr, /*mut*/ _css) = (0.0, 0.0, 0.0, 0.0);
 		let mut cash = [0.0f64; 17];
 		if let Some(ls) = ss_mp_ls.get(pv) {
 		//if let Some(ls) = ss_mp_ls.get(&pv) {
@@ -461,8 +464,8 @@ println!("{}: {} = {}", fd5, fd.fdid, fd.solar_storage_series[16]);
 				}
 			}
 		}
-		irr = financial::irr(&cash, None).unwrap();
-		css = txc + m1c + m3c + esc + plt + imp + ope + com;
+		let irr = financial::irr(&cash, None).unwrap();
+		let css = txc + m1c + m3c + esc + plt + imp + ope + com;
 		print!(r###"
 {},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}"###
 		, pv, txn, m1n, m3n, esn,  txc, m1c, m3c, esc
@@ -473,7 +476,7 @@ println!("{}: {} = {}", fd5, fd.fdid, fd.solar_storage_series[16]);
 			plt, imp, ope, com,
 			css, fin, irr, cst,
 			..Default::default() };
-		css0 += css;
+		//css0 += css;
 	}
 	print!("\n");
 	//print!("COST {}\n", css0);
@@ -507,15 +510,15 @@ pub async fn power(ssv: &mut Vec<Substation>) {
 
 async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let cfg = acfg.read().await;
-    let sol = cfg.criteria.solar_energy_ratio;
-    let max = cfg.criteria.bess_energy_max;
+    //let sol = cfg.criteria.solar_energy_ratio;
+    //let max = cfg.criteria.bess_energy_max;
     let sot = cfg.criteria.solar_time_window;
     let syf = cfg.criteria.start_year_from_2022;
     let imy = cfg.criteria.implement_year;
     let opy = cfg.criteria.operate_year;
     let se0 = cfg.criteria.vspp_energy_ratio_start; // = 0.05
     let se1 = cfg.criteria.vspp_energy_ratio_end; // = 0.10
-    let egr = cfg.criteria.energy_growth_rate; // = 0.05
+    //let egr = cfg.criteria.energy_growth_rate; // = 0.05
     let sup = cfg.criteria.energy_sale_price; // 4000 B/mwh
     let bmx = cfg.criteria.bess_energy_max as f32; // 40 mwh
     let bup = cfg.criteria.bess_sell_per_mwh as f32; // 2500 B/mwh
@@ -526,7 +529,7 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 	print!("solar calc\n");
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
-            let mut fd = &mut wk5prc.ssv[si].feeders[fi];
+            let /*mut*/ fd = &mut wk5prc.ssv[si].feeders[fi];
             fd.target_year_solar_energy = fd.year_load.power_quality.pos_energy * se0 as f32;
             fd.target_solar_power = fd.target_year_solar_energy / (365.0 * sot);
             fd.target_solar_energy_storage = fd.target_solar_power * sot;
@@ -536,7 +539,7 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.fdid, fd.target_year_solar_energy, yrl
             );
             */
-            let mut soe = fd.year_load.power_quality.pos_energy * se0;
+            let /*mut*/ soe = fd.year_load.power_quality.pos_energy * se0;
             let yst = (se1 - se0) / (yrl as f32);
             for i in 0..yrl {
                 let yrt = 1.0 + yst * (i as f32 + 1.0);
@@ -570,25 +573,25 @@ async fn solar_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let cfg = acfg.read().await;
 	
-    let ifv = cfg.criteria.infra_invest_per_year;
+    //let ifv = cfg.criteria.infra_invest_per_year;
     let syf = cfg.criteria.start_year_from_2022;
     let imy = cfg.criteria.implement_year;
     let opy = cfg.criteria.operate_year;
 	
-	let txc = cfg.criteria.smart_trx_unit_cost;
+	//let txc = cfg.criteria.smart_trx_unit_cost;
 
-	let m1c = cfg.criteria.smart_m1p_unit_cost;
-	let m3c = cfg.criteria.smart_m3p_unit_cost;
-	let plc = cfg.criteria.platform_cost_per_device;
-	let imc = cfg.criteria.implement_cost_per_device;
-	let opc = cfg.criteria.operation_cost_per_year_device;
+	//let m1c = cfg.criteria.smart_m1p_unit_cost;
+	//let m3c = cfg.criteria.smart_m3p_unit_cost;
+	//let plc = cfg.criteria.platform_cost_per_device;
+	//let imc = cfg.criteria.implement_cost_per_device;
+	//let opc = cfg.criteria.operation_cost_per_year_device;
 	
-	let mrc = cfg.criteria.meter_reading_cost_cut;
+	//let mrc = cfg.criteria.meter_reading_cost_cut;
 	
-	let ooc = cfg.criteria.outage_operation_cost_per_hour;
-	let pll = cfg.criteria.loss_in_power_line_rate;
-	let esp = cfg.criteria.energy_sale_price;
-	let phl = cfg.criteria.loss_in_phase_balance_rate;
+	//let ooc = cfg.criteria.outage_operation_cost_per_hour;
+	//let pll = cfg.criteria.loss_in_power_line_rate;
+	//let esp = cfg.criteria.energy_sale_price;
+	//let phl = cfg.criteria.loss_in_phase_balance_rate;
 	
     let ims = syf as usize;
     let ops = syf as usize + imy as usize;
@@ -596,7 +599,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let mut txno = 0.0;
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
-            let mut fd = &mut wk5prc.ssv[si].feeders[fi];
+            let /*mut*/ fd = &mut wk5prc.ssv[si].feeders[fi];
             txno += fd.tx.tx_no as f32;
         }
     }
@@ -604,7 +607,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
 	
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
-            let mut fd = &mut wk5prc.ssv[si].feeders[fi];
+            let /*mut*/ fd = &mut wk5prc.ssv[si].feeders[fi];
             fd.tx_to_all_ratio = fd.tx.tx_no as f32 / txno;
 
             fd.infra_invest_year = fd.tx_to_all_ratio * txno * 1000000.0;
@@ -651,7 +654,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 * cfg.criteria.energy_sale_price;
 
             for i in 0..ope {
-                let mut icst = 0.0;
+                //let mut icst = 0.0;
 
                 // transformer
                 let mut cst = fd.smart_trx_cost / 3.0;
@@ -659,7 +662,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.smart_trx_cost_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // meter 1 phase
                 let mut cst = fd.smart_m1p_cost / 3.0;
@@ -667,7 +670,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.smart_m1p_cost_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // meter 3 phase
                 let mut cst = fd.smart_m3p_cost / 3.0;
@@ -675,7 +678,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.smart_m3p_cost_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // communication_cost
                 let mut cst = fd.comm_cost_year;
@@ -683,7 +686,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.comm_cost_year_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // platform cost
                 let mut cst = fd.platform_cost / 3.0;
@@ -691,7 +694,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.platform_cost_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // implement cost
                 let mut cst = fd.implement_cost / 3.0;
@@ -699,7 +702,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                     cst = 0.0;
                 }
                 fd.implement_cost_series.push(cst);
-                icst += cst;
+                //icst += cst;
 
                 // operation_cost
                 let mut cst = fd.operation_cost;
@@ -719,7 +722,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.operation_cost_m1p_series.push(cst_m1p);
                 fd.operation_cost_m3p_series.push(cst_m3p);
                 fd.operation_cost_ess_series.push(cst_ess);
-                icst += cst;
+                //icst += cst;
 
                 // meter_reading_cost
                 let mut cst = fd.meter_reading_cost;
@@ -750,7 +753,7 @@ async fn infra_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.loss_in_phase_balance_cost_series.push(cst);
 
                 // infra invest
-                let mut infra = fd.infra_invest_year;
+                //let mut infra = fd.infra_invest_year;
                 let mut infra = 50000000.0;
                 if i < ops {
                     infra = 0.0;
@@ -771,7 +774,7 @@ async fn return_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let ope = ops + opy as usize;
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
-            let mut fd = &mut wk5prc.ssv[si].feeders[fi];
+            let /*mut*/ fd = &mut wk5prc.ssv[si].feeders[fi];
             let (mut fibe_a, mut ecbe_a, mut toco_a) = (0.0, 0.0, 0.0);
             let (mut fibe0_a, mut ecbe0_a, mut toco0_a) = (0.0, 0.0, 0.0);
             for i in 0..ope {
@@ -820,8 +823,8 @@ async fn return_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
                 fd.financial_benefit_npv_series.push(fibe0);
                 fd.economic_benefit_npv_series.push(ecbe0);
                 fd.total_cost_npv_series.push(toco0);
-				let mut firr = (fibe0-toco0) / toco0 * 100.0f32;
-				let mut eirr = (ecbe0-toco0) / toco0 * 100.0f32;
+				let /*mut*/ firr = (fibe0-toco0) / toco0 * 100.0f32;
+				let /*mut*/ eirr = (ecbe0-toco0) / toco0 * 100.0f32;
 				fd.net_financial_return_series.push(fibe0 - toco0);
 				fd.net_economic_return_series.push(ecbe0 - toco0);
 				fd.firr_series.push(firr);
@@ -853,7 +856,7 @@ async fn ev_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let syf = cfg.criteria.start_year_from_2022;
     let imy = cfg.criteria.implement_year;
     let opy = cfg.criteria.operate_year;
-    let egr = cfg.criteria.energy_growth_rate; // = 0.05
+    //let egr = cfg.criteria.energy_growth_rate; // = 0.05
     let ev0 = cfg.criteria.ev_growth_rate_start; // = 0.05
     let ev1 = cfg.criteria.ev_growth_rate_end; // = 0.08
     let ev4 = cfg.criteria.ev_car_all_reg / cfg.criteria.ev_car_reg_cnt;
@@ -869,7 +872,7 @@ async fn ev_calc(wk5prc: &mut Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let yri = syf as usize;
     for si in 0..wk5prc.ssv.len() {
         for fi in 0..wk5prc.ssv[si].feeders.len() {
-            let mut fd = &mut wk5prc.ssv[si].feeders[fi];
+            let /*mut*/ fd = &mut wk5prc.ssv[si].feeders[fi];
             let mut evn = fd.ev.ev_ds * ev4;
             let evn0 = evn;
             let mut evds = fd.ev.ev_ds; // saled ev each year
@@ -987,10 +990,10 @@ async fn car_reg_2023(wk5prc: &mut Wk5Proc) {
     let mut pv_ca_mp = load_pvcamp();
     let mut pv_ca_mp2 = HashMap::new();
     let mut pv_ca_cn2 = HashMap::new();
-    let mut cnt0 = 0.0;
+    //let mut cnt0 = 0.0;
     pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
     for (k, v) in &pv_ca_mp {
-        cnt0 += *v;
+        //cnt0 += *v;
         let mut kk = k.to_string();
         let mut vv = *v;
         if k == "ยะลา" {
@@ -1035,7 +1038,7 @@ async fn car_reg_2023(wk5prc: &mut Wk5Proc) {
         }
     }
     for (i, t) in asss.iter().enumerate() {
-        let ts = t.to_string();
+        //let ts = t.to_string();
         if let Some(cn) = pv_ca_mp2.get_mut(&t.to_string()) {
             let ad = tk0 * assn[i] / 100.0;
             *cn += ad;
@@ -1055,7 +1058,7 @@ async fn car_reg_2023(wk5prc: &mut Wk5Proc) {
         pv_car_reg_mp.insert(k.to_string(), pv_ca_reg);
     }
     let ev_reg_no = cfg.criteria.ev_car_reg_cnt;
-    for (k, v) in &mut pv_car_reg_mp {
+    for (_k, v) in &mut pv_car_reg_mp {
         if total > 0.0 {
             v.ev_pc = v.ev_no / total as f32;
             v.ev_ds = v.ev_pc * ev_reg_no;
@@ -1102,9 +1105,9 @@ fn ev_use_factor(txno: usize, m3no: usize, m1no: usize) -> f32 {
 }
 
 async fn calc_ev_dist(wk5prc: &mut Wk5Proc) {
-    let cfg = base().config.clone();
-    let cfg = cfg.read().await;
-    let ev_reg_no = cfg.criteria.ev_car_reg_cnt;
+    //let cfg = base().config.clone();
+    //let cfg = cfg.read().await;
+    //let ev_reg_no = cfg.criteria.ev_car_reg_cnt;
     let mut pv_si_mp = HashMap::<String, Vec<usize>>::new();
     for (si, ss) in wk5prc.ssv.iter().enumerate() {
         if let Some(pvl) = pv_si_mp.get_mut(&ss.prov) {
@@ -1114,28 +1117,28 @@ async fn calc_ev_dist(wk5prc: &mut Wk5Proc) {
         }
     }
     let ev_prov_dist = &wk5prc.ev_prov_dist;
-    let mut allev = 0.0;
-    let mut txno0 = 0;
+    //let mut allev = 0.0;
+    //let mut txno0 = 0;
     for (pv, ev) in ev_prov_dist {
         if let Some(pvl) = pv_si_mp.get(pv) {
-            let (mut txno, mut m1no, mut m3no) = (0, 0, 0);
+            //let (mut txno, mut m1no, mut m3no) = (0, 0, 0);
             let mut ss_cus_ev = 0.0;
             for si in pvl {
                 let ss = &wk5prc.ssv[*si];
-                txno += ss.tx.tx_no;
-                m1no += ss.tx.mt1_no;
-                m3no += ss.tx.mt3_no;
+                //txno += ss.tx.tx_no;
+                //m1no += ss.tx.mt1_no;
+                //m3no += ss.tx.mt3_no;
                 ss_cus_ev += ev_use_factor(ss.tx.tx_no, ss.tx.mt3_no, ss.tx.mt1_no);
             }
             if ss_cus_ev.is_nan() {
                 print!("NAN {}\n", ss_cus_ev);
             }
-            txno0 += txno;
+            //txno0 += txno;
             //let ss_cus_ev = txno * 4 + m3no * 2 + m1no;
             // all ev in substation
             //let ss_cus_ev = ev_use_factor(txno, m3no, m1no);
-            let mut tt = 0.0;
-            let mut ssds = 0.0;
+            //let mut tt = 0.0;
+            //let mut ssds = 0.0;
             for si in pvl {
                 let ss = &mut wk5prc.ssv[*si];
                 ss.ev.id = (*ss.ssid).to_string();
@@ -1150,8 +1153,8 @@ async fn calc_ev_dist(wk5prc: &mut Wk5Proc) {
                     si, ss.ev.ev_pc, ss.ev.ev_ds, ss_cus_ev
                 );
                 */
-                ssds += ss.ev.ev_ds;
-                tt += ss.ev.ev_pc;
+                //ssds += ss.ev.ev_ds;
+                //tt += ss.ev.ev_pc;
                 ss.ev.ev_no = 0.0;
                 for fi in 0..ss.feeders.len() {
                     let txno = ss.feeders[fi].tx.tx_no;
@@ -1176,7 +1179,7 @@ async fn calc_ev_dist(wk5prc: &mut Wk5Proc) {
                 pv, txno, m3no, m1no, ev.ev_ds, ssds
             );
             */
-            allev += ev.ev_ds;
+            //allev += ev.ev_ds;
             /*
             print!(
                 "pv: {} - ss len:{} ev:{:.2} regpc:{:.3}\n",

@@ -2,8 +2,8 @@ use crate::sg::{ldp, wk1, wk2, wk3, wk4, wk5};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::sync::OnceLock;
-use tokio::sync::mpsc;
+//use std::sync::OnceLock;
+//use tokio::sync::mpsc;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Default)]
@@ -23,6 +23,7 @@ pub struct BaseData {
     pub wk5prc: Arc<RwLock<wk5::Wk5Proc>>,
     pub fd_tx_info: Arc<RwLock<ldp::FeederTranxInfo>>,
     pub ss_fd_ot: Arc<RwLock<HashMap<String, HashMap<String, Vec<(String, String, String)>>>>>,
+    #[allow(dead_code)]
     pub pv_ca_mp: Arc<RwLock<HashMap<String, f64>>>,
 }
 
@@ -30,12 +31,14 @@ pub struct BaseData {
 pub struct Config {
     pub criteria: ConfigCriteria,
     pub residence: ConfigResidence,
+    #[allow(dead_code)]
     pub industry: ConfigIndustry,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct ConfigCriteria {
     //pub solar_peak_ratio: f64,  //0.15
+    #[allow(dead_code)]
     pub solar_factor: f64,      //6.0
     pub solar_time_window: f32, // 4.0
     pub operate_year: f32,
@@ -52,12 +55,17 @@ pub struct ConfigCriteria {
     pub ev_energy_unit_price: f32,
     pub vspp_energy_ratio_start: f32, // = 0.05
     pub vspp_energy_ratio_end: f32,   // = 0.10
+    #[allow(dead_code)]
     pub energy_growth_rate: f32,      // = 0.05
     pub ev_growth_rate_start: f32,    //= 0.05
     pub ev_growth_rate_end: f32,      //= 0.08
     pub ev_car_all_reg: f32,          // = 100219.0
+                                      //
+    #[allow(dead_code)]
 	pub ev_batt_power_ratio: f32, // 0.3
+    #[allow(dead_code)]
 	pub infra_invest_last_six_year: f32, //
+    #[allow(dead_code)]
 	pub infra_invest_per_year: f32, //
 	pub ev_real_charge: f32, // 3.0
 	pub expect_min_firr: f32,
@@ -65,10 +73,13 @@ pub struct ConfigCriteria {
 	pub smart_trx_unit_cost: f32, // 100000
 	pub smart_m1p_unit_cost: f32, // 8000
 	pub smart_m3p_unit_cost: f32, // 12000
+    #[allow(dead_code)]
 	pub comm_per_devic_per_month: f32, // 12
 	pub platform_cost_per_device: f32, // 1200
 	pub implement_cost_per_device: f32, // 1000
+    #[allow(dead_code)]
 	pub operation_cost_per_year_device: f32, // 100
+    #[allow(dead_code)]
 	pub operation_cost_per_year: f32, // 100
 	pub meter_reading_cost_cut: f32,
 	pub economi_discount_rate: f32, // 0.08
@@ -82,15 +93,24 @@ pub struct ConfigCriteria {
 	pub operate_per_year_bess: f32,
 
     //
+    #[allow(dead_code)]
     pub power_growth_rate: f32,         //1.217
+    #[allow(dead_code)]
     pub predicted_ev_car: f32,          //155400.0
     pub evcharger_type1_pw: f32,        //0.022kW
+    #[allow(dead_code)]
     pub industry_min_tranx_number: f32, //40
+    #[allow(dead_code)]
     pub industry_min_meter_number: f32, //40
+    #[allow(dead_code)]
     pub home_min_power: f32,            //800kW
+    #[allow(dead_code)]
     pub ev_charger_min_power: f32,      //600kW
+    #[allow(dead_code)]
     pub home_min_meter_number: f32,     //10
+    #[allow(dead_code)]
     pub pea_min_firr: f32,              // = 4.26
+    #[allow(dead_code)]
     pub pea_min_eirr: f32,              // = 10.0
     pub solar_energy_ratio: f32,
     pub bess_energy_max: f32,
@@ -103,17 +123,24 @@ pub struct ConfigCriteria {
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct ConfigResidence {
+    #[allow(dead_code)]
     pub cost_soft_per_device: f64, // = 3000
+    #[allow(dead_code)]
     pub cost_comm_per_device: f64, // = 1800
+    #[allow(dead_code)]
     pub cost_oper_per_device: f64, // = 2000
+    #[allow(dead_code)]
     pub influ_factor: f64,         // = 0.5
     pub sat_energy: f32,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct ConfigIndustry {
+    #[allow(dead_code)]
     pub cost_soft_per_device: f64, // = 3000
+    #[allow(dead_code)]
     pub cost_comm_per_device: f64, // = 1800
+    #[allow(dead_code)]
     pub cost_oper_per_device: f64, // = 2000
     //pub influ_factor: f64,         // = 0.5
 }

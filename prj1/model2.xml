@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.opengroup.org/xsd/archimate/3.0/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengroup.org/xsd/archimate/3.0/ http://www.opengroup.org/xsd/archimate/3.1/archimate3_Diagram.xsd http://purl.org/dc/elements/1.1/ http://www.opengroup.org/xsd/archimate/3.1/dc.xsd" identifier="id-07bd7e8c664e42c8b92977839d750cf8">
+  <name xml:lang="en">model2</name>
+  <metadata>
+    <schema>Dublin Core</schema>
+    <schemaversion>1.1</schemaversion>
+    <dc:publisher>chm</dc:publisher>
+  </metadata>
+  <elements>
+    <element identifier="id-4a1d62de7ec044629acc8d277de312b4" xsi:type="BusinessActor">
+      <name xml:lang="en">Actor1</name>
+    </element>
+  </elements>
+  <organizations>
+    <item>
+      <label xml:lang="en">Business</label>
+      <item identifierRef="id-4a1d62de7ec044629acc8d277de312b4" />
+    </item>
+    <item>
+      <label xml:lang="en">Views</label>
+      <item identifierRef="id-76cd1f8eaa5b47a689981711895f9fe8" />
+    </item>
+  </organizations>
+  <views>
+    <diagrams>
+      <view identifier="id-76cd1f8eaa5b47a689981711895f9fe8" xsi:type="Diagram">
+        <name xml:lang="en">Default View</name>
+        <node identifier="id-81cd2e4231b54781a5fb5c01ce35967f" elementRef="id-4a1d62de7ec044629acc8d277de312b4" xsi:type="Element" x="120" y="87" w="120" h="55">
+          <style>
+            <fillColor r="255" g="255" b="181" a="100" />
+            <lineColor r="92" g="92" b="92" a="100" />
+            <font name="Segoe UI" size="9">
+              <color r="0" g="0" b="0" />
+            </font>
+          </style>
+        </node>
+      </view>
+    </diagrams>
+  </views>
+</model>

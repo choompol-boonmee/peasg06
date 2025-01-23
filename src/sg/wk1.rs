@@ -1,17 +1,20 @@
+
+#[allow(dead_code)]
 pub async fn run() {
+    #[allow(dead_code)]
     Task::default().ana().await
 }
 
-use crate::sg::dcl;
+//use crate::sg::dcl;
 use crate::sg::ldp::base;
 use askama::Template;
-use askama_axum;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
-use std::sync::OnceLock;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+//use askama_axum;
+//use std::collections::HashMap;
+//use std::fs::File;
+//use std::io::BufReader;
+//use std::sync::OnceLock;
+//use tokio::sync::mpsc;
+//use tokio::sync::oneshot;
 
 #[derive(Template, Debug, Default, Clone)]
 #[template(path = "wk1/subst.html")]
@@ -27,6 +30,7 @@ pub struct Substation {
 
 #[derive(Debug, Clone, Default)]
 pub struct FeederLoad {
+    #[allow(dead_code)]
     pub sbst: String,
     pub feed: String,
     pub fstday: i32,
@@ -47,13 +51,13 @@ impl Task {
         let sbvc1 = base.sbvc_2022.read().await;
         let sbmp1 = base.sbmp_2022.read().await;
         let mut ssv = Vec::new();
-        let (mut c1, mut c2) = (0, 0);
-        let (mut d1, mut d2) = (0, 0);
+        //let (mut c1, mut c2) = (0, 0);
+        //let (mut d1, mut d2) = (0, 0);
         for sb in &*sbvc1 {
             let mut ss = Substation::default();
             ss.sbst = sb.clone();
             ss.feed = Vec::new();
-            d1 += 1;
+            //d1 += 1;
             let sb = sb.clone();
             let vfd = sbmp1.get(&sb).unwrap();
             let mut vldp = Vec::<Box<FeederLoad>>::new();
@@ -64,7 +68,7 @@ impl Task {
                 fd.fstday = -1;
                 let tr = &f.time_r;
                 let mut tg = -1;
-                let mut gd = 0;
+                //let mut gd = 0;
                 for d in 0..365 {
                     let mut cc = 0;
                     let ts = d * 48;
@@ -74,7 +78,7 @@ impl Task {
                         } else if let crate::sg::dcl::LoadProfVal::None = tr[tt] {
                             cc += 1;
                         } else {
-                            gd += 1;
+                            //gd += 1;
                         }
                     }
                     if cc == 0 {
@@ -96,10 +100,10 @@ impl Task {
                 fd.none = no;
                 fd.good = gd;
                 if tg >= 0 {
-                    c1 += 1;
+                    //c1 += 1;
                     fd.fstday = tg;
                 } else {
-                    d2 += 1;
+                    //d2 += 1;
                 }
                 vldp.push(Box::new(fd));
             }

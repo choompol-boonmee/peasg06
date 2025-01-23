@@ -1,40 +1,40 @@
 use crate::sg::ldp::base;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::sg::ldp::FeederTranx;
+//use crate::sg::ldp::FeederTranx;
 use std::fs::File;
 use std::fs;
 use std::io::BufReader;
-use crate::sg::ldp::TranxInfo;
-use crate::sg::imp::CSVFile;
-use crate::sg::imp::src_dir;
-use std::path::PathBuf;
-use crate::sg::imp::data_dir;
-use crate::sg::wk4::YearLoad;
-use crate::sg::ldp;
-use crate::sg::wk5::Tranx;
-use crate::sg::wk5::EvalPara1;
+//use crate::sg::ldp::TranxInfo;
+////use crate::sg::imp::CSVFile;
+//use crate::sg::imp::src_dir;
+//use std::path::PathBuf;
+//use crate::sg::imp::data_dir;
+//use crate::sg::wk4::YearLoad;
+//use crate::sg::ldp;
+//use crate::sg::wk5::Tranx;
+//use crate::sg::wk5::EvalPara1;
 use crate::sg::wk5::EvDistCalc;
-use crate::sg::prc1::SubstInfo;
-use crate::sg::wk4::Substation as Wk4Substation;
-use crate::sg::wk5::Substation as Wk5Substation;
-use crate::sg::wk4::Wk4Proc;
-use regex::Regex;
-use crate::sg::dcl::LoadProfVal;
-use crate::sg::wk4::DayLoad;
-use crate::sg::prc2::Transformer;
+//use crate::sg::prc1::SubstInfo;
+//use crate::sg::wk4::Substation as Wk4Substation;
+//use crate::sg::wk5::Substation as Wk5Substation;
+//use crate::sg::wk4::Wk4Proc;
+//use regex::Regex;
+//use crate::sg::dcl::LoadProfVal;
+//use crate::sg::wk4::DayLoad;
+//use crate::sg::prc2::Transformer;
 use crate::sg::prc1::p1_spp_conn;
 use crate::sg::prc1::p1_vspp_conn;
 use crate::sg::prc1::SPPConn;
 use crate::sg::prc1::VSPPConn;
 use crate::sg::imp::ld_replan;
 use crate::sg::imp::REPlan;
-use crate::sg::imp::ld_bisze;
-use crate::sg::gis1::ar_list;
-use crate::sg::gis1::DbfVal;
+//use crate::sg::imp::ld_bisze;
+//use crate::sg::gis1::ar_list;
+//use crate::sg::gis1::DbfVal;
 use crate::sg::mvline::utm_latlong;
 use crate::sg::wk5::ld_fd_es_m;
-use crate::sg::mvline::latlong_utm;
+//use crate::sg::mvline::latlong_utm;
 use crate::sg::prc3::year_load_power;
 use crate::sg::prc3::ld_p3_calc;
 use crate::sg::prc3::ld_sub_loc;
@@ -144,7 +144,7 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
     let newre = ld_replan();
     let mut re_sb_m = HashMap::<String,Vec::<REPlan>>::new();
     for rep in &newre {
-        if let Some(mut rev) = re_sb_m.get_mut(&rep.sbid) {
+        if let Some(/*mut*/ rev) = re_sb_m.get_mut(&rep.sbid) {
             rev.push(rep.clone());
         } else {
             re_sb_m.insert(rep.sbid.clone(), vec![rep.clone()]);
@@ -157,26 +157,27 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
     use std::fmt::Write;
     let mut pv_req = String::new();
     let mut sb_req = String::new();
-    let mut fd_req = String::new();
-    let mut pv35 = String::new();
+    let /*mut*/ _fd_req = String::new();
+    let /*mut*/ _pv35 = String::new();
     let mut sb_inf_v = Vec::<Proc41Item>::new();
     write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
         "sb", "name", "pv", "pos_peak", "pos_avg", "pos_ngy", "neg_peak", "neg_avg", "neg_cnt", "neg_ngy",
-         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL");
+         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL").unwrap();
     for pv in prvs { // for pv
         let (mut pv1, mut pv2) = (String::new(),String::new());
         let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) = (0f32,0f32,0f32,0f32,0i32,0usize);
         let mut spp_cn = 0;
         let mut vspp_cn = 0;
         let mut rep_cn = 0;
-        let mut rep_pw = 0;
+        let /*mut*/ _rep_pw = 0;
         let mut pv_es = 0f32;
-        let mut pv_inf = Proc41Item::default();
-        if let (Some(sbs)) = (prv_sub.get(pv)) { // if pvca
+        let /*mut*/ _pv_inf = Proc41Item::default();
+        if let Some(sbs) = prv_sub.get(pv) { // if pvca
             for sb in sbs { // for sb
                 //println!("  sb: {} >>>>>", sb);
                 let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) = (0f32,0f32,0f32,0f32);
-                let (mut ssmw, mut sstr) = (0i32,0usize);
+                //let (mut ssmw, mut sstr) = (0i32,0usize);
+                //let mut ssmw = 0i32;
                 let (mut neg_cnt, mut pos_engy, mut neg_engy) = (0usize, 0f32, 0f32);
                 let (mut ss1, mut ss2) = (String::new(),String::new());
                 let mut sb_es = 0f32;
@@ -186,7 +187,7 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
                     //sbif.a();
                     for fd in &sbif.feeders { // for feeders
-                        if let Some(mut ca) = pv_calc.get_mut(fd) {
+                        if let Some(/*mut*/ ca) = pv_calc.get_mut(fd) {
                             if ca.year_load.loads.len()<365 { continue; }
                             if ca.year_load.loads[100].load.len()<48 { continue; }
                             let mut fd_es = 0f32;
@@ -199,7 +200,7 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                                 ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.pos_avg,
                                 ca.year_load.power_quality.neg_peak, ca.year_load.power_quality.neg_avg,
                                 fd_es,
-                            );
+                            ).unwrap();
                             pos_peak += ca.year_load.power_quality.pos_peak;
                             pos_avg += ca.year_load.power_quality.pos_avg;
                             neg_peak += ca.year_load.power_quality.neg_peak;
@@ -244,10 +245,10 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                     if ldln.len()==0 { continue; }
                     ldln = format!("https://maps.google.com/?q={}", ldln);
                     let sb_es0 = (sb_es + 0.5) as i32;
-                    let mut sb_es0 = sb_es0 as f32;
-                    let mut sb_pw0 = sb_es0 * 0.5;
+                    let /*mut*/ sb_es0 = sb_es0 as f32;
+                    let /*mut*/ _sb_pw0 = sb_es0 * 0.5;
                     write!(ss1, "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n", sb, sbif.name, pv, pos_peak, pos_avg, neg_peak,
-                        neg_avg, neg_cnt, sbif.mvxn, sbif.trxn, x, y, sb_es);
+                        neg_avg, neg_cnt, sbif.mvxn, sbif.trxn, x, y, sb_es).unwrap();
                     let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) = (0usize,0usize,0f64,0f64);
                     let (mut mt_1p, mut mt_3p) = (0usize, 0usize);
                     if let Some(treg) = treg_sb_m.get(sb) {
@@ -260,7 +261,8 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     
                     let mut mwh = pos_engy / 365.0 / 10.0;
-                    let mut mw1 = (neg_peak+neg_avg)*0.5;
+                    //let mut mw1 = (neg_peak+neg_avg)*0.5;
+                    let /*mut*/ mw1;
 
                     // spp count
                     let mut spp = 0;
@@ -287,10 +289,10 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
 
                     if pos_peak>1.0 && neg_cnt>10000 && neg_engy>5000.0 {
                         //let mut mwh = pos_engy / 365.0 / 25.0;
-                        let mw2 = neg_avg * 1.5;
-                        if mw1>mw2 { mw1 = mw2; }
+                        //let mw2 = neg_avg * 1.5;
+                        //if mw1>mw2 { mw1 = mw2; }
                         mwh = mwh.ceil();
-                        if neg_cnt<200 { mw1 = 0.0; mwh = 0.0; };
+                        //if neg_cnt<200 { mw1 = 0.0; mwh = 0.0; };
                         mw1 = mwh * 0.5;
 
                     } else {
@@ -320,21 +322,21 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                         sb, sbif.name, pv, pos_peak, pos_avg, pos_engy, neg_peak, neg_avg, neg_cnt, neg_engy,
                         mwh, mw1, sbif.mvxn, sbif.trxn, ldln, 
                         sb_tx_no, sb_mt_cnt, sb_eg5_sm.ceil(), sb_eg2_sm.ceil(),
-                        spp, vspp, repl);
+                        spp, vspp, repl).unwrap();
                     }
                     pv_pos_peak += pos_peak;
                     pv_pos_avg += pos_avg;
                     pv_neg_peak += neg_peak;
                     pv_neg_avg += neg_avg;
                     pv_es += sb_es;
-                    ssmw = sbif.mvxn;
-                    sstr = sbif.trxn;
+                    let ssmw = sbif.mvxn;
+                    let sstr = sbif.trxn;
                     pvmw += ssmw;
                     pvtr += sstr;
 
                 }
                 if ss2.len()>2 {
-                    write!(pv2,"{}", ss1);
+                    write!(pv2,"{}", ss1).unwrap();
                     //write!(pv2,"{}", ss2);
                 }
                 sb_inf_v.push(sb_inf);
@@ -346,11 +348,11 @@ pub async fn prc41() -> Result<(), Box<dyn std::error::Error>> {
                 eg5_sm = treg.eg5_sm/1000000.0;
                 eg2_sm = treg.eg2_sm/1000000.0;
             }
-            write!(pv_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(pv_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es).unwrap();
             //write!(pv_req, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
             //    , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
             write!(pv1, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
-                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es).unwrap();
         }
         print!("{}", pv1);
 
@@ -390,13 +392,13 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
     let mut pv_sbv_mt = pv_sbv_m.clone();
     let mut pv_sbv_ne = pv_sbv_m.clone();
     let mut pv_sbv_eg = pv_sbv_m.clone();
-    for (k,v) in &mut pv_sbv_mt {
+    for (_k,v) in &mut pv_sbv_mt {
         v.sort_by(|a, b| b.mt.cmp(&a.mt));
     }
-    for (k,v) in &mut pv_sbv_ne {
+    for (_k,v) in &mut pv_sbv_ne {
         v.sort_by(|a, b| b.neg_cnt.cmp(&a.neg_cnt));
     }
-    for (k,v) in &mut pv_sbv_eg {
+    for (_k,v) in &mut pv_sbv_eg {
         v.sort_by(|a, b| b.pos_ngy.partial_cmp(&a.pos_ngy).unwrap());
     }
 
@@ -416,17 +418,17 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
 
     write!(ss_r2, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
         "sb", "name", "pv", "pos_peak", "pos_avg", "pos_ngy", "neg_peak", "neg_avg", "neg_cnt", "neg_ngy",
-         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT1","MT3","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL");
+         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT1","MT3","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL").unwrap();
 
-    let set1 = vec!["สงขลา",];
-    let set1 = vec!["สระบุรี","ขอนแก่น","สุราษฏร์ธานี","นครสวรรค์",];
-    let set1 = vec!["สระแก้ว","เพชรบุรี",];
-    let set1 = vec!["ฉะเชิงเทรา","สมุทรสาคร","นครปฐม",];
+    let _set1 = vec!["สงขลา",];
+    let _set1 = vec!["สระบุรี","ขอนแก่น","สุราษฏร์ธานี","นครสวรรค์",];
+    let _set1 = vec!["สระแก้ว","เพชรบุรี",];
+    let _set1 = vec!["ฉะเชิงเทรา","สมุทรสาคร","นครปฐม",];
 
          
     for pv in prvs {
         let mut mt_del = Vec::<String>::new();
-        write!(ss_mt, "\n{}\n", pv);
+        write!(ss_mt, "\n{}\n", pv).unwrap();
 
         let mut fc = fc0;
 
@@ -460,7 +462,7 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
                 if v.mt==0 { continue; }
                 if v.pos_avg==0.0 { continue; }
                 let bc = v.pos_ngy * fc;
-                write!(ss_mt,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc);
+                write!(ss_mt,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc).unwrap();
             }
             if pv=="นครราชสีมา" {
                 let mut mt_cnt = 0;
@@ -472,7 +474,7 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
-        write!(ss_ne, "\n{}\n", pv);
+        write!(ss_ne, "\n{}\n", pv).unwrap();
         if let Some(sbv) = pv_sbv_ne.get(pv) {
             let cn = if sbv.len()>=mxbt { mxbt } else { sbv.len() };
             for c in 0..cn {
@@ -480,10 +482,10 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
                 if v.mt==0 { continue; }
                 if v.pos_avg==0.0 { continue; }
                 let bc = v.pos_ngy * fc;
-                write!(ss_ne,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc);
+                write!(ss_ne,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc).unwrap();
             }
         }
-        write!(ss_eg, "\n{}\n", pv);
+        write!(ss_eg, "\n{}\n", pv).unwrap();
         if let Some(sbv) = pv_sbv_eg.get(pv) {
             let cn = if sbv.len()>=mxbt { mxbt } else { sbv.len() };
             for c in 0..cn {
@@ -491,12 +493,12 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
                 if v.mt==0 { continue; }
                 if v.pos_avg==0.0 { continue; }
                 let bc = v.pos_ngy * fc;
-                write!(ss_eg,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc);
+                write!(ss_eg,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc).unwrap();
             }
         }
 
         let mut sbv0 = Vec::<String>::new();
-        write!(ss_r1, "\n{}\n", pv);
+        write!(ss_r1, "\n{}\n", pv).unwrap();
         if let (Some(sbv1),Some(sbv2)) = (pv_sbv_mt.get(pv), pv_sbv_eg.get(pv)) {
             let cn1 = if sbv1.len()>=mxbt { mxbt } else { sbv1.len() };
             let cn2 = if sbv2.len()>=mxbt { mxbt } else { sbv2.len() };
@@ -510,11 +512,11 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
             for v in sbv1 {
                 if sbv0.contains(&v.sbid) {
                     let bc = v.pos_ngy * fc;
-                    write!(ss_r1,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc);
+                    write!(ss_r1,"{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.pv, v.sbid, v.mwh, v.pos_ngy, v.neg_cnt, v.dt, v.mt, bc).unwrap();
                 }
             }
         }
-        write!(ss_r2, "\n{}\n", pv);
+        write!(ss_r2, "\n{}\n", pv).unwrap();
         let mut pv_dt = 0usize;
         let mut pv_m1 = 0usize;
         let mut pv_m3 = 0usize;
@@ -541,10 +543,10 @@ pub async fn prc42() -> Result<(), Box<dyn std::error::Error>> {
                     v.sbid, v.name, v.pv, v.pos_peak, v.pos_avg, v.pos_ngy, v.neg_peak, v.neg_avg, v.neg_cnt, v.neg_ngy,
                     v.mwh, v.mw, v.max_pw, v.trxno, v.latlon, 
                     v.dt, v.mt1, v.mt3, v.e5.ceil(), v.e2.ceil(),
-                    v.spp, v.vspp, v.repl);
+                    v.spp, v.vspp, v.repl).unwrap();
             }
         }
-        write!(ss_r3, "{}\t{}\t{}\t{}\t{}\n", pv, pv_dt, pv_m1, pv_m3, pv_es);
+        write!(ss_r3, "{}\t{}\t{}\t{}\t{}\n", pv, pv_dt, pv_m1, pv_m3, pv_es).unwrap();
     }
     if let Ok(_) = fs::write("prj1/p42_sb_r1.txt", ss_r1) { }
     if let Ok(_) = fs::write("prj1/p42_sb_r2.txt", ss_r2) { }
@@ -605,10 +607,10 @@ async fn car_reg_2023() {
     let mut pv_ca_mp = load_pvcamp();
     let mut pv_ca_mp2 = HashMap::new();
     let mut pv_ca_cn2 = HashMap::new();
-    let mut cnt0 = 0.0;
+    //let mut cnt0 = 0.0;
     pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
     for (k, v) in &pv_ca_mp {
-        cnt0 += *v;
+        //cnt0 += *v;
         let mut kk = k.to_string();
         let mut vv = *v;
         if k == "ยะลา" {
@@ -644,7 +646,7 @@ async fn car_reg_2023() {
         }
     }
     for (i, t) in asss.iter().enumerate() {
-        let ts = t.to_string();
+        let _ts = t.to_string();
         if let Some(cn) = pv_ca_mp2.get_mut(&t.to_string()) {
             let ad = tk0 * assn[i] / 100.0;
             *cn += ad;
@@ -666,7 +668,7 @@ async fn car_reg_2023() {
     let mut ev_reg_no = cfg.criteria.ev_car_reg_cnt;
     ev_reg_no += cfg.criteria.ev_car_all_reg;
     //ev_reg_no += 100000.0;
-    for (k, v) in &mut pv_car_reg_mp {
+    for (_k, v) in &mut pv_car_reg_mp {
         if total > 0.0 {
             v.ev_pc = v.ev_no / total as f32;
             v.ev_ds = v.ev_pc * ev_reg_no;
@@ -682,17 +684,17 @@ async fn car_reg_2023() {
     let rti = 0.1/13.0;
     for pv in grp1() {
         if let Some(v) = pv_car_reg_mp.get(pv) {
-            write!(ss, "{}", pv);
+            write!(ss, "{}", pv).unwrap();
             let mut mwh = v.ev_ds * 0.011 * 3.0 * 365.0;
             let mut rtc = rt0;
             for y in 2023..=2039 {
                 mwh += mwh * rtc;
                 if y>= 2025 {
-                    write!(ss,"\t{}", mwh);
+                    write!(ss,"\t{}", mwh).unwrap();
                 }
                 rtc += rti;
             }
-            write!(ss,"\n");
+            write!(ss,"\n").unwrap();
         }
     }
     if let Ok(_) = fs::write("prj1/ev-grw-1.txt", ss) { }
@@ -770,14 +772,14 @@ fn pv_adjust() -> Vec::<(&'static str, f64, f64)> {
 async fn car_reg_2023_a() {
     let cfg = base().config.clone();
 
-    let cfg = cfg.read().await;
+    let _cfg = cfg.read().await;
 
     let mut pv_ca_mp = load_pvcamp();
     let mut pv_ca_mp2 = HashMap::new();
-    let mut cnt0 = 0.0;
+    //let mut cnt0 = 0.0;
     pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
     for (k, v) in &pv_ca_mp {
-        cnt0 += *v;
+        //cnt0 += *v;
         let mut kk = k.to_string();
         let mut vv = *v;
         if k == "ยะลา" {
@@ -815,7 +817,7 @@ async fn car_reg_2023_a() {
     }
     let mut ass_sm = 0.0;
     for (i, adx) in ev_adx.iter().enumerate() {
-        let ts = adx.0.to_string();
+        let _ts = adx.0.to_string();
         if let Some(cn) = pv_ca_mp2.get_mut(&adx.0.to_string()) {
             let ad = tk0 * ev_adx[i].1 / 100.0;
             ass_sm += ev_adx[i].1;
@@ -845,7 +847,7 @@ async fn car_reg_2023_a() {
     ev_reg_no += 76366.0;
     
     //ev_reg_no += 100000.0;
-    for (k, v) in &mut pv_car_reg_mp {
+    for (_k, v) in &mut pv_car_reg_mp {
         if total > 0.0 {
             v.ev_pc = v.ev_no / total as f32;
             v.ev_ds = v.ev_pc * ev_reg_no;
@@ -862,18 +864,18 @@ async fn car_reg_2023_a() {
     let mut ev_sm = 0.0;
     for pv in grp1() {
         if let Some(v) = pv_car_reg_mp.get(pv) {
-            write!(ss, "{}", pv);
+            write!(ss, "{}", pv).unwrap();
             ev_sm += v.ev_ds;
             let mut mwh = v.ev_ds * 0.011 * 3.0 * 365.0;
             let mut rtc = rt0;
             for y in 2023..=2039 {
                 mwh += mwh * rtc;
                 if y>= 2025 {
-                    write!(ss,"\t{}", mwh);
+                    write!(ss,"\t{}", mwh).unwrap();
                 }
                 rtc += rti;
             }
-            write!(ss,"\n");
+            write!(ss,"\n").unwrap();
         }
     }
     println!("ev sum: {}", ev_sm);
@@ -900,13 +902,13 @@ async fn car_reg_2023_b() {
     //let car_reg_bkk_province = "กรุงเทพมหานคร,นนทบุรี,สมุทรปราการ,ยะลา,นราธิวาส,ปัตตานี,สกลนคร,กาฬสินธุ์,ตรัง,มหาสารคาม,มุกดาหาร,อุดรธานี,พัทลุง";
     //let car_reg_bkk_percent = "30.0,25.0,15.0,80.0,80.0,80.0,80.0,80.0,50.0,80.0,80.0,80.0,80.0";
 
-    let car_reg_bkk_province = "กรุงเทพมหานคร,นนทบุรี,สมุทรปราการ,เชียงใหม่,ยะลา,นราธิวาส,ปัตตานี,สกลนคร,กาฬสินธุ์,ตรัง,มหาสารคาม,มุกดาหาร,อุดรธานี,พัทลุง,นครศรีธรรมราช,ศรีสะเกษ,ร้อยเอ็ด,สุรินทร์,กาฬสินธุ์,สุโขทัย,แพร่,ประจวบคีรีขันธ์,พะเยา,ชุมพร,นครพนม,พิจิตร,บึงกาฬ,หนองบัวลำภู,หนองคาย,ตราด,สตูล,ชัยนาท,สิงห์บุรี";
-    let car_reg_bkk_percent = "30.0,25.0,15.0,5.0,80.0,80.0,80.0,80.0,80.0,50.0,80.0,80.0,80.0,80.0,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80";
+    let _car_reg_bkk_province = "กรุงเทพมหานคร,นนทบุรี,สมุทรปราการ,เชียงใหม่,ยะลา,นราธิวาส,ปัตตานี,สกลนคร,กาฬสินธุ์,ตรัง,มหาสารคาม,มุกดาหาร,อุดรธานี,พัทลุง,นครศรีธรรมราช,ศรีสะเกษ,ร้อยเอ็ด,สุรินทร์,กาฬสินธุ์,สุโขทัย,แพร่,ประจวบคีรีขันธ์,พะเยา,ชุมพร,นครพนม,พิจิตร,บึงกาฬ,หนองบัวลำภู,หนองคาย,ตราด,สตูล,ชัยนาท,สิงห์บุรี";
+    let _car_reg_bkk_percent = "30.0,25.0,15.0,5.0,80.0,80.0,80.0,80.0,80.0,50.0,80.0,80.0,80.0,80.0,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80";
     
     //let car_reg_to_province = "สระแก้ว,กระบี่,ปทุมธานี,เพชรบุรี,นครปฐม,ฉะเชิงเทรา,สมุทรสาคร,ระยอง,ราชบุรี,ปราจีนบุรี,สระบุรี,เชียงใหม่,พระนครศรีอยุธยา,บุรีรัมย์,พิษณุโลก";
     //let car_reg_to_percent = "2.0,0.5,20.0,5.0,10.0,8.0,10.0,5.0,8.0,12.0,5.0,5.0,5.0,2.5,2.0";
     
-    let ev_adx = vec![
+    let _ev_adx = vec![
         ("ราชบุรี",5.0),
         ("นครสวรรค์",3.5),
         ("ระนอง",0.5),
@@ -934,15 +936,15 @@ async fn car_reg_2023_b() {
         ("ลพบุรี",1.4),
     ];
 
-    let cfg = cfg.read().await;
+    let _cfg = cfg.read().await;
 
     let mut pv_ca_mp = load_pvcamp();
     let mut pv_ca_mp2 = HashMap::new();
     //let mut pv_ca_cn2 = HashMap::new();
-    let mut cnt0 = 0.0;
+    //let mut cnt0 = 0.0;
     pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
     for (k, v) in &pv_ca_mp {
-        cnt0 += *v;
+        //cnt0 += *v;
         let mut kk = k.to_string();
         let mut vv = *v;
         if k == "ยะลา" {
@@ -1003,7 +1005,7 @@ async fn car_reg_2023_b() {
     }
     let mut ass_sm = 0.0;
     for (i, adx) in ev_adx.iter().enumerate() {
-        let ts = adx.0.to_string();
+        let _ts = adx.0.to_string();
         if let Some(cn) = pv_ca_mp2.get_mut(&adx.0.to_string()) {
             let ad = tk0 * ev_adx[i].1 / 100.0;
             ass_sm += ev_adx[i].1;
@@ -1035,7 +1037,7 @@ async fn car_reg_2023_b() {
     //let ev_reg_no = 91654.0 + 75690.0;
     
     //ev_reg_no += 100000.0;
-    for (k, v) in &mut pv_car_reg_mp {
+    for (_k, v) in &mut pv_car_reg_mp {
         if total > 0.0 {
             v.ev_pc = v.ev_no / total as f32;
         }
@@ -1054,7 +1056,7 @@ async fn car_reg_2023_b() {
     let (ev_rt0,ev_gw0) = (0.1,0.007);
     let (et_rt0,et_gw0) = (0.25,0.005);
 
-    let mut ev_sm = 0.0;
+    let /*mut*/ ev_sm = 0.0;
 
     let ev_mw = 0.011; // mw
     let ev_dy_hr = 4.0;
@@ -1063,7 +1065,7 @@ async fn car_reg_2023_b() {
 
     for pv in grp1() {
         if let Some(v) = pv_car_reg_mp.get(pv) {
-            write!(ss, "{}", pv);
+            write!(ss, "{}", pv).unwrap();
             let mut pv_ev_ac_no = ev_ac_no * v.ev_pc;
             let mut pv_ev_la_yr = ev_ls_yr * v.ev_pc;
             let mut ev_rt = ev_rt0;
@@ -1092,7 +1094,7 @@ async fn car_reg_2023_b() {
                     //write!(ss,"\t{}", pv_et_la_yr); // new ev of the year
                     //write!(ss,"\t{}", pv_et_ac_no); // evs of the year
                     //write!(ss,"\t{}", et_mwh); // evs of the year
-                    write!(ss,"\t{}", ev_mwh+et_mwh); // evs of the year
+                    write!(ss,"\t{}", ev_mwh+et_mwh).unwrap(); // evs of the year
                 }
             }
             /*
@@ -1107,7 +1109,7 @@ async fn car_reg_2023_b() {
                 }
             }
             */
-            write!(ss,"\n");
+            write!(ss,"\n").unwrap();
         }
     }
     println!("ev sum: {}", ev_sm);
@@ -1188,10 +1190,10 @@ fn pv_adjust_c() -> Vec::<(&'static str, f64, f64)> {
 async fn car_reg_2023_c() {
     let mut pv_ca_mp = load_pvcamp();
     let mut pv_ca_mp2 = HashMap::new();
-    let mut cnt0 = 0.0;
+    //let mut cnt0 = 0.0;
     pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
     for (k, v) in &pv_ca_mp {
-        cnt0 += *v;
+        //cnt0 += *v;
         let mut kk = k.to_string();
         let mut vv = *v;
         if k == "ยะลา" {
@@ -1227,7 +1229,7 @@ async fn car_reg_2023_c() {
     }
     let mut ass_sm = 0.0;
     for (i, adx) in ev_adx.iter().enumerate() {
-        let ts = adx.0.to_string();
+        let _ts = adx.0.to_string();
         if let Some(cn) = pv_ca_mp2.get_mut(&adx.0.to_string()) {
             let ad = tk0 * ev_adx[i].1 / 100.0;
             ass_sm += ev_adx[i].1;
@@ -1250,7 +1252,7 @@ async fn car_reg_2023_c() {
         pv_car_reg_mp.insert(k.to_string(), pv_ca_reg);
     }
 
-    for (k, v) in &mut pv_car_reg_mp {
+    for (_k, v) in &mut pv_car_reg_mp {
         if total > 0.0 {
             v.ev_pc = v.ev_no / total as f32;
         }
@@ -1278,16 +1280,16 @@ async fn car_reg_2023_c() {
 
     for pv in grp1() {
         if let Some(v) = pv_car_reg_mp.get(pv) {
-            write!(ss, "{}", pv);
+            write!(ss, "{}", pv).unwrap();
             
-            write!(s_ev_y, "{}", pv);
-            write!(s_ev_a, "{}", pv);
-            write!(s_ev_mw, "{}", pv);
-            write!(s_ev_wh, "{}", pv);
-            write!(s_et_y, "{}", pv);
-            write!(s_et_a, "{}", pv);
-            write!(s_et_mw, "{}", pv);
-            write!(s_et_wh, "{}", pv);
+            write!(s_ev_y, "{}", pv).unwrap();
+            write!(s_ev_a, "{}", pv).unwrap();
+            write!(s_ev_mw, "{}", pv).unwrap();
+            write!(s_ev_wh, "{}", pv).unwrap();
+            write!(s_et_y, "{}", pv).unwrap();
+            write!(s_et_a, "{}", pv).unwrap();
+            write!(s_et_mw, "{}", pv).unwrap();
+            write!(s_et_wh, "{}", pv).unwrap();
 
             let mut pv_ev_ac_no = ev_ac_no * v.ev_pc;
             let mut pv_ev_la_yr = ev_ls_yr * v.ev_pc;
@@ -1320,28 +1322,28 @@ async fn car_reg_2023_c() {
                     //write!(ss,"\t{}", pv_et_la_yr); // new ev of the year
                     //write!(ss,"\t{}", pv_et_ac_no); // evs of the year
                     //write!(ss,"\t{}", et_mwh); // evs of the year
-                    write!(ss,"\t{}", pv_ev_mwh+pv_et_mwh); // evs of the year
+                    write!(ss,"\t{}", pv_ev_mwh+pv_et_mwh).unwrap(); // evs of the year
 
-                    write!(s_ev_y, "\t{}", pv_ev_la_yr);
-                    write!(s_ev_a, "\t{}", pv_ev_ac_no);
-                    write!(s_ev_mw, "\t{}", pv_ev_mw);
-                    write!(s_ev_wh, "\t{}", pv_ev_mwh);
+                    write!(s_ev_y, "\t{}", pv_ev_la_yr).unwrap();
+                    write!(s_ev_a, "\t{}", pv_ev_ac_no).unwrap();
+                    write!(s_ev_mw, "\t{}", pv_ev_mw).unwrap();
+                    write!(s_ev_wh, "\t{}", pv_ev_mwh).unwrap();
 
-                    write!(s_et_y, "\t{}", pv_et_la_yr);
-                    write!(s_et_a, "\t{}", pv_et_ac_no);
-                    write!(s_et_mw, "\t{}", pv_et_mw);
-                    write!(s_et_wh, "\t{}", pv_et_mwh);
+                    write!(s_et_y, "\t{}", pv_et_la_yr).unwrap();
+                    write!(s_et_a, "\t{}", pv_et_ac_no).unwrap();
+                    write!(s_et_mw, "\t{}", pv_et_mw).unwrap();
+                    write!(s_et_wh, "\t{}", pv_et_mwh).unwrap();
                 }
             }
-            write!(ss,"\n");
-            write!(s_ev_y, "\n");
-            write!(s_ev_a, "\n");
-            write!(s_ev_mw, "\n");
-            write!(s_ev_wh, "\n");
-            write!(s_et_y, "\n");
-            write!(s_et_a, "\n");
-            write!(s_et_mw, "\n");
-            write!(s_et_wh, "\n");
+            write!(ss,"\n").unwrap();
+            write!(s_ev_y, "\n").unwrap();
+            write!(s_ev_a, "\n").unwrap();
+            write!(s_ev_mw, "\n").unwrap();
+            write!(s_ev_wh, "\n").unwrap();
+            write!(s_et_y, "\n").unwrap();
+            write!(s_et_a, "\n").unwrap();
+            write!(s_et_mw, "\n").unwrap();
+            write!(s_et_wh, "\n").unwrap();
         }
     }
     if let Ok(_) = fs::write("prj1/ev-grw-1.txt", ss) { }
@@ -1356,3 +1358,184 @@ async fn car_reg_2023_c() {
     if let Ok(_) = fs::write("prj1/s_et_mw.txt", s_et_mw) { }
     if let Ok(_) = fs::write("prj1/s_et_wh.txt", s_et_wh) { }
 }
+
+pub async fn prc47() -> Result<(), Box<dyn std::error::Error>> {
+   car_reg_2023_d().await;
+   Ok(())
+}
+
+use crate::sg::prc3::ld_p3_prvs;
+async fn car_reg_2023_d() {
+    let prvs = ld_p3_prvs();
+    let mut pv_ca_mp = load_pvcamp();
+    let mut pv_ca_mp2 = HashMap::new();
+    //let mut cnt0 = 0.0;
+    pv_ca_mp.insert("กรุงเทพมหานคร".to_string(), 967297.0);
+    for (k, v) in &pv_ca_mp {
+        //cnt0 += *v;
+        let mut kk = k.to_string();
+        let mut vv = *v;
+        if k == "ยะลา" {
+            if let Some(v2) = pv_ca_mp.get("สาขา อ.เบตง") {
+                //let v1 = *v2;
+                vv += *v2;
+            }
+        }
+        if kk == " พระนครศรีอยุธยา" {
+            kk = "พระนครศรีอยุธยา".to_string();
+        }
+        if kk == "แม่ฮองสอน" {
+            kk = "แม่ฮ่องสอน".to_string();
+        }
+        if kk == "สาขา อ.เบตง" {
+            //print!("NO BETONG\n");
+        } else {
+            //print!("'{}' - {}\n", kk, vv);
+            pv_ca_mp2.insert(kk.clone(), vv);
+            //pv_ca_cn2.insert(kk, 0);
+        }
+    }
+
+    let ev_adx = pv_adjust_c();
+    let mut tk0 = 0.0;
+    for (i, adx) in ev_adx.iter().enumerate() {
+        let ts = adx.0.to_string();
+        if let Some(nn) = pv_ca_mp2.get_mut(&ts) {
+            let tk = *nn * ev_adx[i].2 / 100.0;
+            *nn -= tk;
+            tk0 += tk;
+        }
+    }
+    let mut ass_sm = 0.0;
+    for (i, adx) in ev_adx.iter().enumerate() {
+        let _ts = adx.0.to_string();
+        if let Some(cn) = pv_ca_mp2.get_mut(&adx.0.to_string()) {
+            let ad = tk0 * ev_adx[i].1 / 100.0;
+            ass_sm += ev_adx[i].1;
+            *cn += ad;
+        }
+    }
+    
+    println!("assign %{}", ass_sm);
+
+    let mut pv_car_reg_mp = HashMap::new();
+    let mut total = 0.0f32;
+    for (k, v) in &pv_ca_mp2 {
+        if ["กรุงเทพมหานคร,นนทบุรี,สมุทรปราการ"].contains(&k.as_str()) {
+            continue;
+        }
+        let mut pv_ca_reg = EvDistCalc::default();
+        pv_ca_reg.id = k.to_string();
+        pv_ca_reg.ev_no = *v as f32;
+        total += pv_ca_reg.ev_no;
+        pv_car_reg_mp.insert(k.to_string(), pv_ca_reg);
+    }
+
+    for (_k, v) in &mut pv_car_reg_mp {
+        if total > 0.0 {
+            v.ev_pc = v.ev_no / total as f32;
+        }
+    }
+
+    let ev_ls_yr = 75690.0;
+    let ev_ac_no = 89907.0 + ev_ls_yr;
+
+    let et_ls_yr = 238.0 * 3.0;
+    let et_ac_no = 2962.0 + et_ls_yr;
+
+    use std::fmt::Write;
+    let mut ss = String::new();
+
+    let (ev_rt0,ev_gw0) = (0.1,0.007);
+    let (et_rt0,et_gw0) = (0.2,0.005);
+
+    let ev_mw = 0.007; // mw
+    let ev_dy_hr = 3.0;
+    let et_mw = 0.150; // mw
+    let et_dy_hr = 6.0;
+
+    let (mut s_ev_y, mut s_ev_a, mut s_ev_mw, mut s_ev_wh) = (ss.clone(), ss.clone(), ss.clone(), ss.clone(), );
+    let (mut s_et_y, mut s_et_a, mut s_et_mw, mut s_et_wh) = (ss.clone(), ss.clone(), ss.clone(), ss.clone(), );
+
+    for pv in &prvs {
+        if let Some(v) = pv_car_reg_mp.get(pv) {
+            write!(ss, "{}", pv).unwrap();
+            
+            write!(s_ev_y, "{}", pv).unwrap();
+            write!(s_ev_a, "{}", pv).unwrap();
+            write!(s_ev_mw, "{}", pv).unwrap();
+            write!(s_ev_wh, "{}", pv).unwrap();
+            write!(s_et_y, "{}", pv).unwrap();
+            write!(s_et_a, "{}", pv).unwrap();
+            write!(s_et_mw, "{}", pv).unwrap();
+            write!(s_et_wh, "{}", pv).unwrap();
+
+            let mut pv_ev_ac_no = ev_ac_no * v.ev_pc;
+            let mut pv_ev_la_yr = ev_ls_yr * v.ev_pc;
+            let mut ev_rt = ev_rt0;
+
+            let mut pv_et_ac_no = et_ac_no * v.ev_pc;
+            let mut pv_et_la_yr = et_ls_yr * v.ev_pc;
+            let mut et_rt = et_rt0;
+
+            for y in 2024..=2039 {
+                ev_rt += ev_gw0;
+                et_rt += et_gw0;
+
+                pv_ev_la_yr = pv_ev_la_yr * (1.0+ev_rt);
+                pv_et_la_yr = pv_et_la_yr * (1.0+et_rt);
+
+                pv_ev_ac_no += pv_ev_la_yr;
+                pv_et_ac_no += pv_et_la_yr;
+
+                let pv_ev_mw = pv_ev_ac_no * ev_mw * ev_dy_hr;
+                let pv_et_mw = pv_et_ac_no * et_mw * et_dy_hr;
+
+                let pv_ev_mwh = pv_ev_mw * 360.0;
+                let pv_et_mwh = pv_et_mw * 360.0;
+
+                if y>= 2025 {
+                    //write!(ss,"\t{}", pv_ev_la_yr); // new ev of the year
+                    //write!(ss,"\t{}", pv_ev_ac_no); // evs of the year
+                    //write!(ss,"\t{}", et_mwh); // evs of the year
+                    //write!(ss,"\t{}", pv_et_la_yr); // new ev of the year
+                    //write!(ss,"\t{}", pv_et_ac_no); // evs of the year
+                    //write!(ss,"\t{}", et_mwh); // evs of the year
+                    write!(ss,"\t{}", pv_ev_mwh+pv_et_mwh).unwrap(); // evs of the year
+
+                    write!(s_ev_y, "\t{}", pv_ev_la_yr).unwrap();
+                    write!(s_ev_a, "\t{}", pv_ev_ac_no).unwrap();
+                    write!(s_ev_mw, "\t{}", pv_ev_mw).unwrap();
+                    write!(s_ev_wh, "\t{}", pv_ev_mwh).unwrap();
+
+                    write!(s_et_y, "\t{}", pv_et_la_yr).unwrap();
+                    write!(s_et_a, "\t{}", pv_et_ac_no).unwrap();
+                    write!(s_et_mw, "\t{}", pv_et_mw).unwrap();
+                    write!(s_et_wh, "\t{}", pv_et_mwh).unwrap();
+                }
+            }
+            write!(ss,"\n").unwrap();
+            write!(s_ev_y, "\n").unwrap();
+            write!(s_ev_a, "\n").unwrap();
+            write!(s_ev_mw, "\n").unwrap();
+            write!(s_ev_wh, "\n").unwrap();
+            write!(s_et_y, "\n").unwrap();
+            write!(s_et_a, "\n").unwrap();
+            write!(s_et_mw, "\n").unwrap();
+            write!(s_et_wh, "\n").unwrap();
+        }
+    }
+    if let Ok(_) = fs::write("prj1/a_ev-grw-1.txt", ss) { }
+
+    if let Ok(_) = fs::write("prj1/a_s_ev_y.txt", s_ev_y) { }
+    if let Ok(_) = fs::write("prj1/a_s_ev_a.txt", s_ev_a) { }
+    if let Ok(_) = fs::write("prj1/a_s_ev_mw.txt", s_ev_mw) { }
+    if let Ok(_) = fs::write("prj1/a_s_ev_wh.txt", s_ev_wh) { }
+
+    if let Ok(_) = fs::write("prj1/a_s_et_y.txt", s_et_y) { }
+    if let Ok(_) = fs::write("prj1/a_s_et_a.txt", s_et_a) { }
+    if let Ok(_) = fs::write("prj1/a_s_et_mw.txt", s_et_mw) { }
+    if let Ok(_) = fs::write("prj1/a_s_et_wh.txt", s_et_wh) { }
+}
+
+

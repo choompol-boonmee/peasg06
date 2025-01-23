@@ -14,12 +14,12 @@ pub async fn prc61() -> Result<(), Box<dyn std::error::Error>> {
     //pub fn feed_calc() -> &'static HashMap<String, DataCalc> {    FEED_CALC.get_or_init(feed_calc_init) }
     for (fd,calc) in fdcalc {
         let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-        std::fs::create_dir_all(&fd_dir);
+        let _ = std::fs::create_dir_all(&fd_dir);
         let fd_file = format!("{}/p61_{}.bin", fd_dir, fd);
         if let Ok(ser) = bincode::serialize(&calc) {
             std::fs::write(fd_file.clone(), ser).unwrap();
             println!("write {}", fd_file);
-            let ld = ld_p61_fd_calc(fd);
+            let _ld = ld_p61_fd_calc(fd);
         }
     }
     Ok(())
@@ -40,12 +40,12 @@ pub async fn prc62() -> Result<(), Box<dyn std::error::Error>> {
     println!("fd: {}", fdtrs.len());
     for (fd, trans) in fdtrs {
         let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-        std::fs::create_dir_all(&fd_dir);
+        let _ = std::fs::create_dir_all(&fd_dir);
         let fd_file = format!("{}/p62_{}.bin", fd_dir, fd);
         if let Ok(ser) = bincode::serialize(&trans) {
             std::fs::write(fd_file.clone(), ser).unwrap();
             println!("write {}", fd_file);
-            let ld = ld_p62_fd_trans(fd);
+            let _ld = ld_p62_fd_trans(fd);
         }
     }
     Ok(())
@@ -126,7 +126,7 @@ pub async fn prc63() -> Result<(), Box<dyn std::error::Error>> {
     }
     for (fd, fd_tr_lo) in fd_tr_lo {
         let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-        std::fs::create_dir_all(&fd_dir);
+        let _ = std::fs::create_dir_all(&fd_dir);
         let fd_file = format!("{}/p63_lo_{}.bin", fd_dir, fd);
         if let Ok(ser) = bincode::serialize(&fd_tr_lo) {
             std::fs::write(fd_file.clone(), ser).unwrap();
@@ -214,7 +214,7 @@ pub async fn prc64() -> Result<(), Box<dyn std::error::Error>> {
         if fd.len()<5 { continue;}
         let fd = fd[0..5].to_string();
         let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-        std::fs::create_dir_all(&fd_dir);
+        let _ = std::fs::create_dir_all(&fd_dir);
         let fd_file = format!("{}/p64_mt_mp_{}.bin", fd_dir, fd);
         if let Ok(ser) = bincode::serialize(&mt_mp) {
             std::fs::write(fd_file.clone(), ser).unwrap();
@@ -265,7 +265,7 @@ pub async fn prc65() -> Result<(), Box<dyn std::error::Error>> {
         if fd.len()<5 { continue;}
         let fd = fd[0..5].to_string();
         let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-        std::fs::create_dir_all(&fd_dir);
+        let _ = std::fs::create_dir_all(&fd_dir);
         let fd_file = format!("{}/p65_tx_mt_{}.bin", fd_dir, fd);
         if let Ok(ser) = bincode::serialize(&tx_mt) {
             std::fs::write(fd_file.clone(), ser).unwrap();
@@ -310,6 +310,7 @@ pub async fn prc66() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn prc66a() -> Result<(), Box<dyn std::error::Error>> {
     let subinf = ld_p3_sub_inf();
     let mut trn = 0;
@@ -415,7 +416,7 @@ pub async fn prc68() -> Result<(), Box<dyn std::error::Error>> {
     let subinf = ld_p3_sub_inf();
     let mut trn = 0;
     let mut mtn = 0;
-    let mut mtl = 0;
+    let /*mut*/ _mtl = 0;
     for (sbid, sbin) in subinf {
         println!("{}", sbid);
         for fdid in &sbin.feeders {
@@ -449,7 +450,7 @@ pub async fn prc68() -> Result<(), Box<dyn std::error::Error>> {
             println!("{} tr:{} mt:{}", fdid, trs.len(), fd_mt_mp.len());
             let fd = fdid.to_string();
             let fd_dir = format!("{}/mvfd/{}", crate::sg::imp::data_dir(), fd);
-            std::fs::create_dir_all(&fd_dir);
+            let _ = std::fs::create_dir_all(&fd_dir);
             let fd_file = format!("{}/p68_mt_mp_{}.bin", fd_dir, fd);
             if let Ok(ser) = bincode::serialize(&fd_mt_mp) {
                 std::fs::write(fd_file.clone(), ser).unwrap();
@@ -476,7 +477,7 @@ pub fn ld_p68_mt_mp(fd: &String) -> HashMap::<String,Prc6MeterInfo2> {
 pub async fn prc69() -> Result<(), Box<dyn std::error::Error>> {
     let mt_lo_mp = ld_p67_mt_lo_mp();
     println!("lo {}", mt_lo_mp.len());
-    for (id,lo) in mt_lo_mp {
+    for (id,_lo) in mt_lo_mp {
         println!("{}", id);
         break;
     }

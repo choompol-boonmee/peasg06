@@ -1,15 +1,15 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, uty::NumForm, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp*/ ldp::base, uty::NumForm, wk5};
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
-use regex::Regex;
+//use askama_axum;
+//use axum::extract::{Path, Query};
+//use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+//use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
+//use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 //use thousands::Separable;
 use tokio::sync::RwLock;
-use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
+use tokio::sync::{OwnedRwLockReadGuard, /*RwLockReadGuard*/};
 
 #[derive(Template, Debug)]
 #[template(path = "pg2/wk5x.html", escape = "none")]
@@ -81,10 +81,10 @@ pub struct RepoRow1 {
 
 const TT: [&str; 3] = ["NO", "NAME", "SSID",];
 
-pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
+pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, _acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
 
-    let cfg = acfg.read().await;
+    //let cfg = acfg.read().await;
     for t in TT {
         repo.cols.push(t.to_string());
     }
@@ -112,8 +112,8 @@ impl Report {
         let s = self.rows[r].s;
         let f = self.rows[r].f;
 		let rw = &self.rows[r];
-        let ss = &ssv[s];
-        let fd = &ssv[s].feeders[f];
+        let _ss = &ssv[s];
+        let _fd = &ssv[s].feeders[f];
         match c {
             0 => DaVa::USZ(r + 1),
             1 => DaVa::Text(rw.prov.to_string()),

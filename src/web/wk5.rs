@@ -1,7 +1,7 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp ldp::base,*/ wk5};
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+use std::cmp::{/*Eq, Ord, PartialEq,*/ PartialOrd};
+//use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -23,7 +23,7 @@ pub struct RepoRow1 {
 pub async fn make_repo1(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let cfg = acfg.read().await;
     let sol = cfg.criteria.solar_energy_ratio;
-    let max = cfg.criteria.bess_energy_max;
+    //let max = cfg.criteria.bess_energy_max;
     let sot = cfg.criteria.solar_time_window;
     let tt = [
         "SSID", "NAME", "PROV", "FDID", "YR-ENG", "PEAK", "AVG", "ENG0", "TXNO", "txPEA", "txCUS",

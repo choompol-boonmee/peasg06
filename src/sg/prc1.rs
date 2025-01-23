@@ -12,7 +12,7 @@ use crate::sg::dcl::LoadProfVal;
 use regex::Regex;
 use crate::sg::wk4::YearLoad;
 use crate::sg::wk4::DayLoad;
-use crate::sg::ldp::FeederTranxInfo;
+//use crate::sg::ldp::FeederTranxInfo;
 use crate::sg::ldp::FeederTranx;
 use crate::sg::ldp::TranxInfo;
 use std::collections::HashSet;
@@ -38,10 +38,10 @@ pub async fn proc1() -> Result<(), Box<dyn std::error::Error>> {
             subxls = sub;
         }
     }
-    let mut cn = 0;
+    //let mut cn = 0;
     for (k,v) in subxls.into_iter() {
-        cn += 1;
-        if let Some(xx) = sbpvmp.get(&k) {
+        //cn += 1;
+        if let Some(_xx) = sbpvmp.get(&k) {
         } else {
             println!("'{}' == [name={} volt-{} cate-{} egat-{}]", k, v.name, v.volt, v.cate, v.egat);
         }
@@ -171,7 +171,7 @@ pub async fn proc3() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut subinfo = Vec::<SubstInfo>::new();
-    for (k,sb) in subxls {
+    for (_k,sb) in subxls {
         let sbid = sb.sbid.to_string();
         if sbid.len()!=3 { continue; }
         let name = sb.name.to_string();
@@ -256,14 +256,14 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
     let mut sub_inf = HashMap::<String, SubstInfo>::new();
     let mut sub_ldp = HashMap::<String, Wk5Substation>::new();
     let mut sbids = HashMap::<String,i32>::new();
-    let mut cn = 0;
+    //let mut cn = 0;
     while let Some(sb) = subinf.pop() {
         sbids.insert(sb.sbid.to_string(), 1);
         if let Some(sbv) = prv_sub.get_mut(&sb.prov) {
             sbv.push(sb.sbid.to_string());
             sbv.sort();
         } else {
-            cn += 1;
+            //cn += 1;
             //println!("{}.{}-{}", cn, sb.prov, sb.sbid);
             let sbv = vec![sb.sbid.to_string()];
             prv_sub.insert(sb.prov.to_string(), sbv);
@@ -292,7 +292,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
     let mut cn = 0;
     println!("==== NO IN LOAD PROFILE ====");
     for (s,_) in &sub_inf {
-        if let Some(s) = sbldp.get(s) {
+        if let Some(_s) = sbldp.get(s) {
         } else {
             cn += 1;
             println!("{}. {}", cn, s);
@@ -302,7 +302,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
     let mut cn = 0;
     println!("==== NO IN SUBST LIST ====");
     for sb in &subldp {
-        if let Some(s) = sbids.get(&sb.sbst) {
+        if let Some(_s) = sbids.get(&sb.sbst) {
         } else {
             cn += 1;
             println!("{}. {}", cn, sb.sbst);
@@ -313,12 +313,12 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
     let cfg = cfg.read().await;
     let stw = cfg.criteria.solar_time_window;
 
-    let mut txno = 0;
+    //let mut txno = 0;
     //let mut subldp1 = Vec::<Wk5Substation>::new();
-    let (mut sum1, mut sum2) = (0.0, 0.0);
+    //let (mut sum1, mut _sum2) = (0.0, 0.0);
     for ss in &mut subldp {
-        sum1 += ss.year_load.power_quality.pos_energy;
-        sum2 += ss.last_year_load.power_quality.pos_energy;
+        //sum1 += ss.year_load.power_quality.pos_energy;
+        //sum2 += ss.last_year_load.power_quality.pos_energy;
 
         let mut ss2 = Wk5Substation::default();
         ss2.ssid = ss.sbst.to_string();
@@ -339,14 +339,16 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
         for fd in &ss.feeders {
             cn += 1;
             let fdid2 = fd.feed[4..6].to_string();
+            /*
             let mut fdno = 0;
             if let Ok(no) = fdid2.parse::<i32>() {
                 fdno = no;
             }
+            */
             let fdid = format!("{}{}", ss2.ssid, fdid2);
             if re.is_match(&fd.feed) == false { continue }
             //println!("  {}.{}->{} : {}", cn, fd.feed, fdid, re.is_match(&fd.feed));
-            if let Some(fd2) = fdmp.get_mut(&fdid) {
+            if let Some(_fd2) = fdmp.get_mut(&fdid) {
                 println!("======================  {}.{}->{} : {}", cn, fd.feed, fdid, re.is_match(&fd.feed));
             } else {
                 let mut fd2 = FeederLoad::default();
@@ -357,7 +359,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
                 //fd2.trans = fd.trans.clone();
                 for tx in &fd.trans {
                     fd2.tx.tx_no += 1;
-                    txno += 1;
+                    //txno += 1;
                     if tx.tx_own == "P" {
                         fd2.tx.tx_pea += 1;
                     } else {
@@ -371,7 +373,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
                 for di in 0..fd.year_load.loads.len() {
                     for hi in 0..fd.year_load.loads[di].load.len() {
                         match fd.year_load.loads[di].load[hi] {
-                            LoadProfVal::Value(y) => {}
+                            LoadProfVal::Value(_y) => {}
                             _ => {
                                 fd2.year_load.loads[di].load[hi] = LoadProfVal::Value(0.0)
                             }
@@ -381,7 +383,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
                 fdmp.insert(fdid, fd2);
             };
         }
-        let mut fds: Vec<Box<FeederLoad>> = fdmp.into_iter().map(|(k, v)| Box::new(v)).collect();
+        let mut fds: Vec<Box<FeederLoad>> = fdmp.into_iter().map(|(_k, v)| Box::new(v)).collect();
         fds.sort_by(|a, b| a.fdid5.partial_cmp(&b.fdid5).unwrap());
         ss2.feeders = fds;
         //ss2.a();
@@ -393,7 +395,7 @@ pub async fn proc4() -> Result<(), Box<dyn std::error::Error>> {
     sub_ldp_calc(&mut sub_ldp).await;
     sub_ldp_calc_last(&mut sub_ldp).await;
     power_quality(&mut sub_ldp, stw).await;
-    calc_trans(&mut sub_ldp).await;
+    let _ = calc_trans(&mut sub_ldp).await;
 
     let prvs0 = prvs.clone();
     let prv_sub0 = prv_sub.clone();
@@ -427,9 +429,9 @@ pub async fn calc_trans(sub_ldp: &mut HashMap<String,Wk5Substation>) -> Result<(
             fdtxmp = fdtxmp0;
         }
     }
-    let (mut txn, mut mtn, mut fdn, mut efn, mut txo, mut mto, mut fdo) = (0, 0, 0, 0, 0, 0, 0);
+    //let (mut txn, mut mtn, mut fdn, mut efn, mut txo, mut mto, mut _fdo) = (0, 0, 0, 0, 0, 0, 0);
     //let re = Regex::new(r"..._[0-9][0-9][VWB].+").unwrap();
-    let mut fdcnt: HashMap<String, i32> = fdtxmp.iter().map(|(k, v)| (k.to_string(), 0)).collect();
+    let mut fdcnt: HashMap<String, i32> = fdtxmp.iter().map(|(k, _v)| (k.to_string(), 0)).collect();
     let mut fd_keys = HashSet::<String>::new();
     for (k, ss) in sub_ldp {
         for fd in &mut ss.feeders {
@@ -447,24 +449,24 @@ pub async fn calc_trans(sub_ldp: &mut HashMap<String,Wk5Substation>) -> Result<(
                 if let Some(c) = fdcnt.get_mut(&fd.fdid5) {
                     *c += 1;
                 }
-                if let Some(fd) = fd_keys.get(&fd.fdid5) {
-                    txo += txfv.len();
-                    for tx in txfv {
-                        mto += (tx.mt_1_ph + tx.mt_3_ph);
+                if let Some(_fd) = fd_keys.get(&fd.fdid5) {
+                    //txo += txfv.len();
+                    for _tx in txfv {
+                        //mto += (tx.mt_1_ph + tx.mt_3_ph);
                     }
-                    fdo += 1;
+                    //fdo += 1;
                 } else {
-                    txn += txfv.len();
-                    for tx in txfv {
-                        mtn += (tx.mt_1_ph + tx.mt_3_ph);
+                    //txn += txfv.len();
+                    for _tx in txfv {
+                        //mtn += (tx.mt_1_ph + tx.mt_3_ph);
                     }
-                    fdn += 1;
+                    //fdn += 1;
                     fd_keys.insert(fd.fdid5.to_string());
                 }
                 println!("{} {} {} en:{} {}", k, fd.fdid5, txfv.len(), pw1, pw0);
                 fd.trans.append(&mut txfv.clone());
             } else {
-                efn += 1;
+                //efn += 1;
             }
         }
     }
@@ -559,13 +561,13 @@ pub async fn sub_ldp_calc_last(sub_ldp: &mut HashMap<String, Wk5Substation>) {
 // meter
 pub async fn proc5() -> Result<(), Box<dyn std::error::Error>> {
     //let base = base();
-    let mut cn = 0;
+    let /*mut*/ _cn = 0;
     if let Ok(file) = File::open(crate::sg::ldp::res("txmtmp.bin")) {
         let rd = BufReader::new(file);
         if let Ok(txmtmp) =
             bincode::deserialize_from::<BufReader<File>, HashMap<String, TranxInfo>>(rd) {
             let mut fdtxmp = HashMap::<String, Vec<FeederTranx>>::new();
-            for (k, tx) in txmtmp {            
+            for (_k, tx) in txmtmp {            
                 if tx.trans_feed.len() < 5 {
                     continue;
                 }
@@ -654,8 +656,8 @@ pub fn grp1() -> [&'static str;25] {
 pub async fn proc6() -> Result<(), Box<dyn std::error::Error>> {
     let cfg = base().config.clone();
     let cfg = cfg.read().await;
-    let stw = cfg.criteria.solar_time_window;
-    let prv: HashSet<&str> = grp1().into_iter().collect();
+    let _stw = cfg.criteria.solar_time_window;
+    let _prv: HashSet<&str> = grp1().into_iter().collect();
     if let Ok(file) = File::open(crate::sg::ldp::res("peagrd4.bin")) {
         let rd = BufReader::new(file);
         if let Ok(mut grd)=bincode::deserialize_from::<BufReader<File>, PEAGrid>(rd) {
@@ -675,7 +677,7 @@ pub async fn proc6() -> Result<(), Box<dyn std::error::Error>> {
             }
             */
             println!("goto outage");
-            outage(&mut grd).await;
+            outage(&mut grd).await?;
             /*
             println!("prv:{}", grd.prvs.len());
             println!("inf:{}", grd.sub_inf.len());
@@ -742,14 +744,14 @@ pub async fn outage(grd: &mut PEAGrid) -> Result<(), Box<dyn std::error::Error>>
 pub async fn proc7() -> Result<(), Box<dyn std::error::Error>> {
     let cfg = base().config.clone();
     let cfg = cfg.read().await;
-    let stw = cfg.criteria.solar_time_window;
-    let prv: HashSet<&str> = grp1().into_iter().collect();
+    let _stw = cfg.criteria.solar_time_window;
+    let _prv: HashSet<&str> = grp1().into_iter().collect();
     if let Ok(file) = File::open(crate::sg::ldp::res("peagrd4.bin")) {
         let rd = BufReader::new(file);
-        if let Ok(mut grd)=bincode::deserialize_from::<BufReader<File>, PEAGrid>(rd) {
+        if let Ok(/*mut*/ grd)=bincode::deserialize_from::<BufReader<File>, PEAGrid>(rd) {
             println!("prv:{}", grd.prvs.len());
             for (k,s) in &grd.prv_sub {
-                let pp = k.as_str();
+                let _pp = k.as_str();
                 let (mut pw1, mut pw0) = (0f32,0f32);
                 let (mut nw1, mut nw0) = (0f32,0f32);
                 for si in s {
@@ -802,12 +804,12 @@ pub struct VSPPConn {
 }
 
 pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
-    let mut grd = PEAGrid::default();
+    let /*mut*/ _grd = PEAGrid::default();
     let mut sub_thnm = HashMap::<String,String>::new();
     if let Ok(file) = File::open(crate::sg::ldp::res("peagrd4a.bin")) {
         let rd = BufReader::new(file);
-        if let Ok(mut g)=bincode::deserialize_from::<BufReader<File>, PEAGrid>(rd) {
-            for (k,sb) in &g.sub_inf {
+        if let Ok(/*mut*/ g)=bincode::deserialize_from::<BufReader<File>, PEAGrid>(rd) {
+            for (_k,sb) in &g.sub_inf {
                 sub_thnm.insert(sb.name.to_string(), sb.sbid.to_string());
             }
             //println!("{} {} {}", g.prvs.len(), g.prv_sub.len(), g.sub_inf.len());
@@ -817,11 +819,11 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
     let mut sppv = Vec::<SPPConn>::new();
     if let Ok(file) = File::open(crate::sg::ldp::res("spp_info.bin")) {
         let rd = BufReader::new(file);
-        if let Ok(mut sppinf)=bincode::deserialize_from::<BufReader<File>, Vec<SPPInfo>>(rd) {
+        if let Ok(/*mut*/ sppinf)=bincode::deserialize_from::<BufReader<File>, Vec<SPPInfo>>(rd) {
             println!("all {}", sppinf.len());
             for spp in &sppinf {
                 if spp.abbr.len()!=6 { continue; }
-                let mut s2 = String::new();
+                let /*mut*/ _s2 = String::new();
                 let mut idv = Vec::<String>::new();
                 let pts = spp.conn.split("-");
                 for pt in pts {
@@ -859,9 +861,9 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
     for spp in &sppv {
         spphs.insert(spp.ppid.to_string(), spp.clone());
     }
-    let mut lpv = Vec::<SPPLoadProfile>::new();
+    let /*mut*/ _lpv = Vec::<SPPLoadProfile>::new();
     let yrs = ["2022", "2023"];
-    let yr = "2022";
+    let _yr = "2022";
     for yr in yrs {
         let lpf = format!("spp-{}.bin", yr);
         if let Ok(file) = File::open(crate::sg::ldp::res(&lpf)) {
@@ -871,7 +873,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
                 let mut en = 0;
                 for vs in &mut lp {
                     let sbky = vs.substation.trim();
-                    if let (Some(mut spp),Ok(mw)) = (spphs.get_mut(sbky),vs.mw.parse::<f64>()) {
+                    if let (Some(/*mut*/ spp),Ok(mw)) = (spphs.get_mut(sbky),vs.mw.parse::<f64>()) {
                         spp.lpcn += 1;
                         spp.lpsm += mw;
                     } else {
@@ -882,7 +884,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    let mut spp_ldp: Vec<SPPConn> = spphs.into_iter().map(|(k, v)| v).collect();
+    let mut spp_ldp: Vec<SPPConn> = spphs.into_iter().map(|(_k, v)| v).collect();
     for ssp in &mut spp_ldp { if ssp.lpcn>0 { ssp.lpav = ssp.lpsm / ssp.lpcn as f64; } }
     let file = format!("{}/spp_ldp.bin", crate::sg::imp::data_dir());
     if let Ok(ser) = bincode::serialize(&spp_ldp) {
@@ -893,9 +895,9 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
     let mut vsppv = Vec::<VSPPConn>::new();
     if let Ok(file) = File::open(crate::sg::ldp::res("vspp_info.bin")) {
         let rd = BufReader::new(file);
-        if let Ok(mut vsppi)=bincode::deserialize_from::<BufReader<File>, Vec<VSPPInfo>>(rd) {
+        if let Ok(/*mut*/ vsppi)=bincode::deserialize_from::<BufReader<File>, Vec<VSPPInfo>>(rd) {
             println!("all={}", vsppi.len());
-            let mut cn = 0;
+            //let mut _cn = 0;
             for vsp in &vsppi {
                 if vsp.ppid.len()!=6 { continue; }
                 if vsp.circ.len()==0 { continue; }
@@ -914,7 +916,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
                 let ppif = vsp.clone();
                 let vspp = VSPPConn { ppid, sbid, fdid, ppif, ..Default::default()};
                 vsppv.push(vspp);
-                cn += 1;
+                //cn += 1;
             }
         }
         let mut cn = 0;
@@ -931,7 +933,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
     for vspp in &vsppv {
         vspphs.insert(vspp.ppid.to_string(), vspp.clone());
     }
-    let mut lpv = Vec::<VSPPLoadProfile>::new();
+    let /*mut*/ _lpv = Vec::<VSPPLoadProfile>::new();
     let yrs = ["2022", "2023"];
     for yr in yrs {
         let lpf = format!("vspp-{}.bin", yr);
@@ -943,7 +945,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
                 let mut en = 0;
                 for vs in &mut lp {
                     let sbky = vs.plant_code.trim();
-                    if let (Some(mut vspp),Ok(mw)) = (vspphs.get_mut(sbky),vs.mw.parse::<f64>()) {
+                    if let (Some(/*mut*/ vspp),Ok(mw)) = (vspphs.get_mut(sbky),vs.mw.parse::<f64>()) {
                         vspp.lpcn += 1;
                         vspp.lpsm += mw;
                     } else {
@@ -954,7 +956,7 @@ pub async fn proc8() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    let mut vspp_ldp: Vec<VSPPConn> = vspphs.into_iter().map(|(k, v)| v).collect();
+    let mut vspp_ldp: Vec<VSPPConn> = vspphs.into_iter().map(|(_k, v)| v).collect();
     for ssp in &mut vspp_ldp { if ssp.lpcn>0 { ssp.lpav = ssp.lpsm / ssp.lpcn as f64; } }
     let file = format!("{}/vspp_ldp.bin", crate::sg::imp::data_dir());
     if let Ok(ser) = bincode::serialize(&vspp_ldp) {

@@ -6,8 +6,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::sync::Arc;
 use std::sync::OnceLock;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+//use tokio::sync::mpsc;
+//use tokio::sync::oneshot;
 use tokio::sync::RwLock;
 use toml;
 
@@ -82,7 +82,7 @@ pub async fn load_sspvmp() {
 
 pub async fn load_ssfdot() {
     // get outage data
-    let mut ssfdot = HashMap::<String, HashMap<String, Vec<(String, String, String)>>>::new();
+    //let mut ssfdot = HashMap::<String, HashMap<String, Vec<(String, String, String)>>>::new();
     //if let Ok(file) = File::open("data/sbfdot.bin") {
     if let Ok(file) = File::open(crate::sg::ldp::res("sbfdot.bin")) {
         let rd = BufReader::new(file);
@@ -98,20 +98,24 @@ pub async fn load_ssfdot() {
     }
 }
 
+/*
 #[derive(Debug, Clone)]
 pub struct Substation {
     sbst: String,
     feed: Vec<Box<FeederLoad>>,
 }
+*/
 
 #[derive(Debug, Clone, Default)]
 pub struct FeederLoad {
+    /*
     sbst: String,
     feed: String,
     fstday: i32,
     good: i32,
     null: i32,
     none: i32,
+    */
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -229,7 +233,7 @@ impl Task {
         //if let Ok(f) = File::open("data/lpyd.bin") {
         if let Ok(f) = File::open(crate::sg::ldp::res("lpyd.bin")) {
             let r = BufReader::new(f);
-            if let Ok(mut lpyd) = bincode::deserialize_from::<
+            if let Ok(/*mut*/ lpyd) = bincode::deserialize_from::<
                 BufReader<File>,
                 Vec<(Vec<String>, HashMap<String, Vec<Box<dcl::FeederLoad>>>)>,
             >(r)

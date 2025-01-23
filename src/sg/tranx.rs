@@ -1,4 +1,4 @@
-use crate::sg::ldp::{FeederTranxInfo, TranxInfo};
+use crate::sg::ldp::{/*FeederTranxInfo*/ TranxInfo};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
@@ -15,7 +15,7 @@ pub async fn load_txmtmp() {
             bincode::deserialize_from::<BufReader<File>, HashMap<String, TranxInfo>>(rd)
         {
             //print!("txmtmp: {}\n", txmtmp.len());
-            for (k, tx) in txmtmp {
+            for (_k, tx) in txmtmp {
                 print!("k: {} \n", tx.trans_feed);
             }
         } // read txmtmp.bin

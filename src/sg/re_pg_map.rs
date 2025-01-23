@@ -1,26 +1,26 @@
 use image::{Rgb, RgbImage};
-use imageproc::drawing::{draw_filled_rect_mut, draw_line_segment_mut, draw_text_mut};
+use imageproc::drawing::{draw_filled_rect_mut, draw_line_segment_mut, /*draw_text_mut*/};
 use imageproc::rect::Rect;
-use rusttype::{Font, Scale};
+//use rusttype::{Font, Scale};
 use askama::Template;
-use askama_axum::IntoResponse;
+//use askama_axum::IntoResponse;
 use std::collections::HashMap;
 use ab_glyph::FontVec;
 use ab_glyph::PxScale;
 use crate::sg::prc5::pv_rg_map;
 use crate::sg::prc5::prv_calc;
-use crate::sg::gis1::DbfVal;
+//use crate::sg::gis1::DbfVal;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
-use crate::sg::wk5::EvDistCalc;
-use crate::sg::load::load_pvcamp;
+//use crate::sg::wk5::EvDistCalc;
+//use crate::sg::load::load_pvcamp;
 use axum::extract::Path;
 
 /////////////////////////////////////////////////////////////
 fn re_png_map_gen(yr: String) -> Vec<u8> {
     let dir = format!("{}/re_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&dir);
+    let _ = std::fs::create_dir_all(&dir);
     let file = format!("{}/re_map.png", dir);
 
     //////////////////////////////////////////// GET DATA - START
@@ -74,18 +74,18 @@ fn re_png_map_gen(yr: String) -> Vec<u8> {
     let (ww, hh, mx, my) = (400,600, 25, 25);
     let mut image = RgbImage::new(ww, hh);
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font_vec = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = FontVec::try_from_vec(font_vec).expect("Font Vec");
-    let uniform_scale_24px = PxScale::from(24.0);
+    let _font = FontVec::try_from_vec(font_vec).expect("Font Vec");
+    let _uniform_scale_24px = PxScale::from(24.0);
 
     let mut pv_rgs = Vec::<(String, Vec::<Vec::<(f64, f64)>>, f32)>::new();
     let (mut avmx, mut avmn) = (0f32, 0f32);
     let mut b_fst = true;
-    let mut cnt = 0usize;
+    //let mut cnt = 0usize;
     for (pv,rg) in pv_rg_map() {
-        let mut pwavg = 0f32;
+        let /*mut*/ pwavg = 0f32;
         if let Some(calc) = prv_calc().get(pv) {
             let va = calc.year_load.power_quality.pos_avg;
             //println!("{} va: {}", pv, va);
@@ -97,7 +97,7 @@ fn re_png_map_gen(yr: String) -> Vec<u8> {
                 if va>avmx { avmx = va; }
                 if va<avmn { avmn = va; }
             }
-            cnt += 1;
+            //cnt += 1;
         }
         pv_rgs.push((pv.to_string(), rg.clone(), pwavg));
     }
@@ -107,7 +107,7 @@ fn re_png_map_gen(yr: String) -> Vec<u8> {
         let (x,y) = &pv_rgs[0].1[0][0];
         let (x,y) = (*x, *y);
         let (mut x0, mut x1, mut y0, mut y1) = (x as f32,x as f32,y as f32,y as f32);
-        for (pv, rg, av) in &pv_rgs {
+        for (_pv, rg, _av) in &pv_rgs {
             //println!("{} - {}", pv, rg.len());
             for pg in rg {
                 for pp in pg {
@@ -183,7 +183,7 @@ fn re_png_map_gen(yr: String) -> Vec<u8> {
             //println!("col1 {} : {} : {:?}", i, i0, cols[i]);
         }
 
-        for (pv, rg, av) in &pv_rgs {
+        for (pv, rg, _av) in &pv_rgs {
             let mut co = wht;
             if let Some(pw) = pv_pw_mp.get(pv) {
                 if pwmx>pwmn {
@@ -309,9 +309,9 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
     let mut pv_rgs = Vec::<(String, Vec::<Vec::<(f64, f64)>>, f32)>::new();
     let (mut avmx, mut avmn) = (0f32, 0f32);
     let mut b_fst = true;
-    let mut cnt = 0usize;
+    //let mut cnt = 0usize;
     for (pv,rg) in pv_rg_map() {
-        let mut pwavg = 0f32;
+        let /*mut*/ pwavg = 0f32;
         if let Some(calc) = prv_calc().get(pv) {
             let va = calc.year_load.power_quality.pos_avg;
             //println!("{} va: {}", pv, va);
@@ -323,7 +323,7 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
                 if va>avmx { avmx = va; }
                 if va<avmn { avmn = va; }
             }
-            cnt += 1;
+            //cnt += 1;
         }
         pv_rgs.push((pv.to_string(), rg.clone(), pwavg));
     }
@@ -333,7 +333,7 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
         let (x,y) = &pv_rgs[0].1[0][0];
         let (x,y) = (*x, *y);
         let (mut x0, mut x1, mut y0, mut y1) = (x as f32,x as f32,y as f32,y as f32);
-        for (pv, rg, av) in &pv_rgs {
+        for (_pv, rg, _av) in &pv_rgs {
             //println!("{} - {}", pv, rg.len());
             for pg in rg {
                 for pp in pg {
@@ -349,7 +349,7 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
         let hy = (hh - 2*my) as f32;
         let xo = mx as f32;
         let yo = my as f32;
-        let fl = 2.0 * mx as f32 - 1.0;
+        let _fl = 2.0 * mx as f32 - 1.0;
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
             let prt = (x1-x0)/(y1-y0);
@@ -377,17 +377,17 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
 
         //let evgrw = car_reg_2023_c();
 
-        write!(pop, "<map name='image-map'>\n");
-        for (pv, rg, av) in &pv_rgs {
-            let lv = -1;
+        write!(pop, "<map name='image-map'>\n").unwrap();
+        for (pv, rg, _av) in &pv_rgs {
+            let _lv = -1;
             //println!("{} av:{} mn:{} mx:{}", pv, av, avmn, avmx);
             let mut poptxt = String::from(pv);
 
             if let Some(xp) = pv_pw_mp.get(pv) {
                 poptxt = format!("{}, - {:.2}mw", pv, xp.separate_with_commas());
                 if let Some(rev) = pv_re_mp.get(pv) {
-                    for (s, y, p) in rev {
-                        write!(poptxt, "\nกำลัง {} mw ในปี พ.ศ. {}", p.separate_with_commas(), y);
+                    for (_s, y, p) in rev {
+                        write!(poptxt, "\nกำลัง {} mw ในปี พ.ศ. {}", p.separate_with_commas(), y).unwrap();
                     }
                 }
             }
@@ -412,14 +412,14 @@ fn re_pop_map_gen(yr: String) -> MapPopInfo {
                 if pli.len()>5 {
                     let mut cos = String::new();
                     for pn in &pli {
-                        if cos.len()>0 { write!(cos, ","); }
-                        write!(cos, "{},{}", pn.x, pn.y);
+                        if cos.len()>0 { write!(cos, ",").unwrap(); }
+                        write!(cos, "{},{}", pn.x, pn.y).unwrap();
                     }
-                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", poptxt, poptxt, pv, cos);
+                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", poptxt, poptxt, pv, cos).unwrap();
                 }
             }
         }
-        write!(pop, "</map>\n");
+        write!(pop, "</map>\n").unwrap();
     }
     pwto = pwto.ceil();
     pwmn = pwmn.ceil();

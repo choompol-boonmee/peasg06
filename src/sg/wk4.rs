@@ -10,16 +10,16 @@ pub async fn load_wk4prc() {
 use crate::sg::dcl;
 use crate::sg::ldp;
 use crate::sg::ldp::base;
-use askama::Template;
-use askama_axum;
+//use askama::Template;
+//use askama_axum;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::{Arc, OnceLock};
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+use std::sync::{Arc, /*OnceLock*/};
+//use tokio::sync::mpsc;
+//use tokio::sync::oneshot;
 use tokio::sync::RwLock;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -234,8 +234,9 @@ impl Task {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn calc_adjust2(&mut self) {
-        let mut ssv = self.subst_list.write().await;
+        let /*mut*/ ssv = self.subst_list.write().await;
         print!("calc adjust2\n");
         for ss in &*ssv {
             for fd in &ss.feeders {
@@ -243,7 +244,7 @@ impl Task {
                 for di in 0..fd.year_load.loads.len() {
                     for hi in 0..fd.year_load.loads[di].load.len() {
                         t1 += 1;
-                        if let dcl::LoadProfVal::Value(v) = fd.year_load.loads[di].load[hi] {
+                        if let dcl::LoadProfVal::Value(_v) = fd.year_load.loads[di].load[hi] {
                         } else {
                             t2 += 1;
                         }
@@ -270,7 +271,7 @@ impl Task {
         let mut fdcnt: HashMap<String, i32> = fd_tx_info
             .fdtxmp
             .iter()
-            .map(|(k, v)| (k.to_string(), 0))
+            .map(|(k, _v)| (k.to_string(), 0))
             .collect();
         for ss in &mut *ssv {
             for fd in &mut ss.feeders {
@@ -288,16 +289,16 @@ impl Task {
                     if let Some(c) = fdcnt.get_mut(&fd0) {
                         *c += 1;
                     }
-                    if let Some(fd) = fd_keys.get(&fd0) {
+                    if let Some(_fd) = fd_keys.get(&fd0) {
                         txo += txfv.len();
                         for tx in txfv {
-                            mto += (tx.mt_1_ph + tx.mt_3_ph);
+                            mto += tx.mt_1_ph + tx.mt_3_ph;
                         }
                         fdo += 1;
                     } else {
                         txn += txfv.len();
                         for tx in txfv {
-                            mtn += (tx.mt_1_ph + tx.mt_3_ph);
+                            mtn += tx.mt_1_ph + tx.mt_3_ph;
                         }
                         fdn += 1;
                         fd_keys.insert(fd0);
@@ -386,7 +387,7 @@ impl Task {
             let vfd = sbmp.get(&sb.to_string()).unwrap();
             let vfd0 = sbmp0.get(&sb.to_string());
             ss.feeders = Vec::<Box<FeederLoad>>::new();
-            if let Some(vfd0) = vfd0 {
+            if let Some(_vfd0) = vfd0 {
                 ss.last_year = true;
             }
             for f in vfd {
@@ -412,7 +413,7 @@ impl Task {
                     for tt in ts..(ts + 48) {
                         let va = f.time_r[tt].clone();
                         match va {
-                            dcl::LoadProfVal::Value(vi) => load.data_quality.good += 1,
+                            dcl::LoadProfVal::Value(_vi) => load.data_quality.good += 1,
                             dcl::LoadProfVal::Null => load.data_quality.null += 1,
                             dcl::LoadProfVal::None => load.data_quality.none += 1,
                         }
@@ -423,7 +424,7 @@ impl Task {
                         for tt in ts..(ts + 48) {
                             let va = f0.time_r[tt].clone();
                             match va {
-                                dcl::LoadProfVal::Value(vi) => load0.data_quality.good += 1,
+                                dcl::LoadProfVal::Value(_vi) => load0.data_quality.good += 1,
                                 dcl::LoadProfVal::Null => load0.data_quality.null += 1,
                                 dcl::LoadProfVal::None => load0.data_quality.none += 1,
                             }
@@ -504,7 +505,7 @@ impl Task {
         }
     }
 
-    pub async fn calc_adj_year(ssid: &String, fdid: &String, mut p_year_load: &mut YearLoad) {
+    pub async fn calc_adj_year(_ssid: &String, _fdid: &String, /*mut*/ p_year_load: &mut YearLoad) {
         for (i, load) in p_year_load.loads.iter().enumerate() {
             if load.data_quality.null + load.data_quality.none == 0 {
                 p_year_load.data_quality.fstday = Some(i);
@@ -590,7 +591,7 @@ impl Task {
             }
         }
 
-        let (mut c1, mut c2) = (0, 0);
+        //let (mut c1, mut c2) = (0, 0);
         for di in 1..p_year_load.loads.len() {
             let mut gd = 0;
             for hl in &mut p_year_load.loads[di].load {
@@ -598,7 +599,7 @@ impl Task {
                     gd += 1;
                 } else {
                     //*hl = dcl::LoadProfVal::Value(0.0); // temp1
-                    c1 += 1;
+                    //c1 += 1;
                 }
             }
             if gd == 0 {
@@ -610,7 +611,7 @@ impl Task {
             if let dcl::LoadProfVal::Value(_) = hl {
             } else {
                 *hl = dcl::LoadProfVal::Value(0.0); // temp2
-                c2 += 1;
+                //c2 += 1;
             }
         }
 

@@ -1,9 +1,9 @@
 use crate::sg::ldp::base;
 use crate::sg::wk4;
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
-use serde::Deserialize;
+//use askama_axum;
+//use axum::extract::{Path, Query};
+//use serde::Deserialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -19,8 +19,8 @@ pub struct Substation {
     prov: String,
     fdno: usize,
     fdno_valid: usize,
-    data_quality: wk4::DataQuality,
-    data_cleaned: wk4::DataQuality,
+    //data_quality: wk4::DataQuality,
+    //data_cleaned: wk4::DataQuality,
     power_quality: wk4::PowerQuality,
 }
 impl SSList {
@@ -38,8 +38,8 @@ impl SSList {
                     fdno_valid += 1;
                 }
             }
-            let data_cleaned = s.year_load.data_cleaned.clone();
-            let data_quality = s.year_load.data_quality.clone();
+            //let data_cleaned = s.year_load.data_cleaned.clone();
+            //let data_quality = s.year_load.data_quality.clone();
             let power_quality = s.year_load.power_quality.clone();
             ssv.push(Substation {
                 ssid,
@@ -47,8 +47,8 @@ impl SSList {
                 prov,
                 fdno,
                 fdno_valid,
-                data_quality,
-                data_cleaned,
+                //data_quality,
+                //data_cleaned,
                 power_quality,
             })
         }

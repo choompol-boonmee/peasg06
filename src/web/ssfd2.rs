@@ -1,7 +1,7 @@
 use crate::sg::ldp::base;
-use crate::sg::{dcl, wk3};
+use crate::sg::{dcl, /*wk3*/};
 use askama::Template;
-use askama_axum;
+//use askama_axum;
 use axum::extract::{Path, Query};
 use serde::Deserialize;
 
@@ -16,21 +16,25 @@ pub struct FeederLoadProfile {
 #[derive(Deserialize, Debug, Default, Clone)]
 pub struct DayLoad {
     pub day: usize,
+    /*
+    #[allow(dead_code)]
     pub peak: dcl::LoadProfVal,
     pub avg: dcl::LoadProfVal,
     pub load_factor: f64,
     pub load_cnt: usize,
     pub load_null: usize,
     pub load_none: usize,
+    */
     pub load: Vec<dcl::LoadProfVal>,
 }
 
 #[derive(Deserialize, Debug, Default)]
 pub struct Param {
-    pub a: Option<String>,
+    //pub a: Option<String>,
 }
 
-pub async fn handler(Path(fid): Path<String>, opt: Option<Query<Param>>) -> FeederLoadProfile {
+#[allow(dead_code)]
+pub async fn handler(Path(fid): Path<String>, _opt: Option<Query<Param>>) -> FeederLoadProfile {
     let base = base();
     let lpl = base.wk3_subst.read().await;
     let mut web = FeederLoadProfile::default();

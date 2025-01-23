@@ -4,9 +4,9 @@ use imageproc::rect::Rect;
 use rusttype::{Font, Scale};
 use axum::routing::get;
 use axum::Router;
-use tokio::sync::oneshot;
+//use tokio::sync::oneshot;
 use askama::Template;
-use askama_axum::IntoResponse;
+//use askama_axum::IntoResponse;
 use std::sync::OnceLock;
 use std::collections::HashMap;
 
@@ -15,12 +15,12 @@ pub async fn prc51() -> Result<(), Box<dyn std::error::Error>> {
     let (ww, hh) = (640,400);
     let mut image = RgbImage::new(ww, hh);
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
 
     let font = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = Font::try_from_vec(font).unwrap();
-    let scale = Scale { x: 15.0, y: 15.0 };
+    let _font = Font::try_from_vec(font).unwrap();
+    let _scale = Scale { x: 15.0, y: 15.0 };
 
     draw_filled_rect_mut(&mut image, Rect::at(0, 0).of_size(ww, hh), wht);
 
@@ -37,10 +37,12 @@ pub async fn prc51() -> Result<(), Box<dyn std::error::Error>> {
 #[derive(Template, Debug)]
 #[template(path = "prc5/base.html", escape = "none")]
 pub struct Prc52Temp {
+    #[allow(dead_code)]
     pub title: String,
 }
 
 impl Prc52Temp {
+    #[allow(dead_code)]
     async fn new() -> Self {
         let title = "HOME";
         let title = title.to_string();
@@ -48,12 +50,13 @@ impl Prc52Temp {
     }
 }
 
+#[allow(dead_code)]
 pub async fn handler() -> Prc52Temp {
     Prc52Temp::new().await
 }
 
 async fn handler3() -> impl axum::response::IntoResponse { 
-    let filename = String::from("image.png");
+    let _filename = String::from("image.png");
     let mut headers = axum::http::HeaderMap::new();
     headers.insert(
         axum::http::header::CONTENT_TYPE, 
@@ -70,7 +73,7 @@ async fn handler3() -> impl axum::response::IntoResponse {
 
 async fn handler4() -> impl axum::response::IntoResponse { 
 
-    let filename = String::from("image.png");
+    let _filename = String::from("image.png");
     let mut headers = axum::http::HeaderMap::new();
 
     let data = Bytes::from(vec![0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,]);
@@ -87,17 +90,17 @@ async fn handler4() -> impl axum::response::IntoResponse {
 
 async fn handler5() -> impl axum::response::IntoResponse { 
 
-    let filename = String::from("image.png");
+    let _filename = String::from("image.png");
     let mut headers = axum::http::HeaderMap::new();
 
     let (ww, hh) = (640,400);
     let mut image = RgbImage::new(ww, hh);
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = Font::try_from_vec(font).unwrap();
-    let scale = Scale { x: 15.0, y: 15.0 };
+    let _font = Font::try_from_vec(font).unwrap();
+    let _scale = Scale { x: 15.0, y: 15.0 };
     draw_filled_rect_mut(&mut image, Rect::at(0, 0).of_size(ww, hh), wht);
     let (x1,y1,x2,y2) = (20f32, 20f32, 100f32, 100f32);
     draw_line_segment_mut(&mut image, (x1, y1), (x2, y2), blk);
@@ -124,7 +127,7 @@ async fn handler5() -> impl axum::response::IntoResponse {
     f.read(&mut buffer).expect("buffer overflow");    
     println!("img:{}", buffer.len());
 
-    let data = Bytes::from(vec![0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,]);
+    let _data = Bytes::from(vec![0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,]);
     headers.insert(
         axum::http::header::CONTENT_TYPE, 
         axum::http::HeaderValue::from_static(&"image/png")
@@ -148,17 +151,17 @@ pub async fn pv_dw(Path(pvnm): Path<String>) -> impl axum::response::IntoRespons
     let mut image = RgbImage::new(ww, hh);
 
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = Font::try_from_vec(font).unwrap();
-    let scale = Scale { x: 15.0, y: 15.0 };
+    let _font = Font::try_from_vec(font).unwrap();
+    let _scale = Scale { x: 15.0, y: 15.0 };
     draw_filled_rect_mut(&mut image, Rect::at(0, 0).of_size(ww, hh), wht);
     let (x1,y1,x2,y2) = (20f32, 20f32, 100f32, 100f32);
     draw_line_segment_mut(&mut image, (x1, y1), (x2, y2), blk);
 
     let pv_dir = format!("{}/pvdw", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(pv_dir);
+    let _ = std::fs::create_dir_all(pv_dir);
     let pv_file = format!("{}/pvdw/pvdw_{}.png", crate::sg::imp::data_dir(), pvnm);
     //println!("pvdir {}", pv_file);
 
@@ -182,7 +185,7 @@ pub async fn pv_dw(Path(pvnm): Path<String>) -> impl axum::response::IntoRespons
         axum::http::header::CONTENT_TYPE, 
         axum::http::HeaderValue::from_static(&"image/png")
     );
-    use axum::body::Bytes;
+    //use axum::body::Bytes;
     (
         headers,
         buffer,
@@ -254,10 +257,10 @@ fn data_minmax(data: &Vec::<Vec<(f64,f64)>>) -> (f64,f64) {
 
 pub async fn pv_dw2(Path(pvnm): Path<String>) -> impl axum::response::IntoResponse { 
     let pv_dir = format!("{}/pvdw", crate::sg::imp::data_dir());
-    let wht = Rgb([255u8, 255u8, 255u8]);
-    let blk = Rgb([0u8, 0u8, 0u8]);
+    let _wht = Rgb([255u8, 255u8, 255u8]);
+    let _blk = Rgb([0u8, 0u8, 0u8]);
 
-    std::fs::create_dir_all(pv_dir);
+    let _ = std::fs::create_dir_all(pv_dir);
     let pv_file = format!("{}/pvdw/pvdw_{}.png", crate::sg::imp::data_dir(), pvnm);
 
     let mut data = vec![
@@ -297,7 +300,7 @@ pub async fn pv_dw2(Path(pvnm): Path<String>) -> impl axum::response::IntoRespon
         .build_cartesian_2d(0.0..24.0, minv..maxv)
         .unwrap();
     ctx.configure_mesh().draw().unwrap();
-    for (i, ls) in data.iter().enumerate() {
+    for (_i, ls) in data.iter().enumerate() {
         ctx.draw_series(LineSeries::new(
             ls.iter().map(|(x, y)| (*x, *y)),
             RGBColor(0, 0, 0),
@@ -317,7 +320,7 @@ pub async fn pv_dw2(Path(pvnm): Path<String>) -> impl axum::response::IntoRespon
         axum::http::header::CONTENT_TYPE, 
         axum::http::HeaderValue::from_static(&"image/png")
     );
-    use axum::body::Bytes;
+    //use axum::body::Bytes;
     (
         headers,
         buffer,
@@ -349,10 +352,10 @@ fn month_st_ed(ym: &String) -> (usize, usize, usize, usize) {
             ed = st;
             let mut ii = 0;
             let mut d1 = 1;
-            let mut d2 = 1;
+            //let mut d2 = 1;
             for j in 0..12 {
                 ii += mon[j as usize];
-                if st<=ii { d2 = ii; return (st, ed, d1, d2); }
+                if st<=ii { let d2 = ii; return (st, ed, d1, d2); }
                 d1 = ii+1;
             }
         }
@@ -361,18 +364,18 @@ fn month_st_ed(ym: &String) -> (usize, usize, usize, usize) {
 }
 
 fn pv_png_ym_gen(pvnm: String, ym: String) -> Vec<u8> {
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (st,ed,_d1,_d2) = month_st_ed(&ym);
     //println!("II: {} = {}-{} {}-{}", ym, st, ed, d1, d2);
     let pv_dir = format!("{}/pv_ym", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&pv_dir);
+    let _ = std::fs::create_dir_all(&pv_dir);
     let pv_file = format!("{}/pv_ym_{}_{}.png", pv_dir, pvnm, ym);
 
-    let wht = Rgb([255u8, 255u8, 255u8]);
-    let blk = Rgb([0u8, 0u8, 0u8]);
+    let _wht = Rgb([255u8, 255u8, 255u8]);
+    let _blk = Rgb([0u8, 0u8, 0u8]);
     let mut data = vec![
         vec![(0f64,1f64), (1f64,2f64), (2f64,1f64), (3f64,2f64), (4f64,1f64), (5f64,2f64), ],
     ];
-    if let (Some(sbs), Some(calc)) = (pv_sub().get(&pvnm), prv_calc().get(&pvnm)) {
+    if let (Some(_sbs), Some(calc)) = (pv_sub().get(&pvnm), prv_calc().get(&pvnm)) {
         data = Vec::<Vec<(f64,f64)>>::new();
         for ii in st-1..ed {
             let dyld = &calc.year_load.loads[ii];
@@ -403,7 +406,7 @@ fn pv_png_ym_gen(pvnm: String, ym: String) -> Vec<u8> {
         .build_cartesian_2d(0.0..24.0, minv..maxv)
         .unwrap();
     ctx.configure_mesh().draw().unwrap();
-    for (i, ls) in data.iter().enumerate() {
+    for (_i, ls) in data.iter().enumerate() {
         ctx.draw_series(LineSeries::new(
             ls.iter().map(|(x, y)| (*x, *y)),
             RGBColor(0, 0, 0),
@@ -421,14 +424,14 @@ fn pv_png_ym_gen(pvnm: String, ym: String) -> Vec<u8> {
 }
 
 fn sb_png_ym_gen(sbid: String, ym: String) -> Vec<u8> {
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (st,ed,_d1,_d2) = month_st_ed(&ym);
     //println!("II: {} = {}-{} {}-{}", ym, st, ed, d1, d2);
     let sb_dir = format!("{}/sb_ym", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&sb_dir);
+    let _ = std::fs::create_dir_all(&sb_dir);
     let sb_file = format!("{}/sb_ym_{}_{}.png", sb_dir, sbid, ym);
 
-    let wht = Rgb([255u8, 255u8, 255u8]);
-    let blk = Rgb([0u8, 0u8, 0u8]);
+    let _wht = Rgb([255u8, 255u8, 255u8]);
+    let _blk = Rgb([0u8, 0u8, 0u8]);
     let mut data = vec![
         vec![(0f64,1f64), (1f64,2f64), (2f64,1f64), (3f64,2f64), (4f64,1f64), (5f64,2f64), ],
     ];
@@ -462,7 +465,7 @@ fn sb_png_ym_gen(sbid: String, ym: String) -> Vec<u8> {
         .build_cartesian_2d(0.0..24.0, minv..maxv)
         .unwrap();
     ctx.configure_mesh().draw().unwrap();
-    for (i, ls) in data.iter().enumerate() {
+    for (_i, ls) in data.iter().enumerate() {
         ctx.draw_series(LineSeries::new(
             ls.iter().map(|(x, y)| (*x, *y)),
             RGBColor(0, 0, 0),
@@ -497,7 +500,7 @@ pub async fn pv_pg_ym(Path((pvnm,ym)): Path<(String,String)>) -> impl axum::resp
     tmp.title = title.to_string();
     tmp.pvnm = pvnm.to_string();
     tmp.ym = ym.to_string();
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (_st,_ed,d1,d2) = month_st_ed(&ym);
     if d2-d1<100 {
         for i in d1..=d2 {
             tmp.dts.push(format!("D{}",i));
@@ -539,13 +542,13 @@ pub async fn pv_png_ym(Path((pvnm,ym)): Path<(String,String)>) -> impl axum::res
 ///////////////////////////////////////////////////////
 #[derive(Template, Debug, Default)]
 #[template(path = "prc5/sb_pg_ym.html", escape = "none")]
-pub struct SubPageYmTemp<'a> {
+pub struct SubPageYmTemp {
     pub title: String,
     pub sbid: String,
     pub ym: String,
     pub dts: Vec<String>, 
     pub feeds: Vec<String>,
-    pub fdcas: Vec<&'a DataCalc>,
+    //pub fdcas: Vec<&'a DataCalc>,
 }
 
 pub async fn sb_pg_ym(Path((sbid,ym)): Path<(String,String)>) -> impl axum::response::IntoResponse { 
@@ -554,7 +557,7 @@ pub async fn sb_pg_ym(Path((sbid,ym)): Path<(String,String)>) -> impl axum::resp
     tmp.title = title.to_string();
     tmp.sbid = sbid.to_string();
     tmp.ym = ym.to_string();
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (_st,_ed,d1,d2) = month_st_ed(&ym);
     if d2-d1<100 {
         for i in d1..=d2 {
             tmp.dts.push(format!("D{}",i));
@@ -584,8 +587,8 @@ pub async fn sb_png_ym(Path((sbid,ym)): Path<(String,String)>) -> impl axum::res
 ///////////////////////////////////////////////////////
 
 pub async fn prc52() -> Result<(), Box<dyn std::error::Error>> {
-    let prv = pv_sub_init();
-    let base = crate::sg::ldp::base();
+    let _prv = pv_sub_init();
+    let _base = crate::sg::ldp::base();
     let app = Router::new()
     .route("/", get(prvs_pg))
     .route("/h3", get(handler3))
@@ -618,6 +621,7 @@ pub struct PrvsPageTemp {
 }
 
 impl PrvsPageTemp {
+    #[allow(dead_code)]
     fn next(&mut self) -> i32 {
         self.no += 1;
         self.no
@@ -649,8 +653,8 @@ pub async fn pv_pg_sub_map(Path(pvnm): Path<String>) -> impl axum::response::Int
     let mut tmp = ProvPageSubMapTemp::default();
     tmp.title = pvnm.to_string();
     tmp.pvnm = pvnm.to_string();
-    let pvsb = pv_sub();
-    let sblo = sub_loc();
+    let _pvsb = pv_sub();
+    let _sblo = sub_loc();
     //println!("{} {}", pvsb.len(), sblo.len());
     if let Some(sbs) = pv_sub().get(&pvnm) {
         //println!("{} - sub:{}", pvnm, sbs.len());
@@ -670,13 +674,13 @@ pub async fn pv_pg_sub_map(Path(pvnm): Path<String>) -> impl axum::response::Int
 
 fn pv_png_sub_map_gen(pv: String) -> Vec<u8> {
     let pv_dir = format!("{}/pv_sub_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&pv_dir);
+    let _ = std::fs::create_dir_all(&pv_dir);
     let pv_file = format!("{}/pv_sub_map_{}.png", pv_dir, pv);
 
     let (ww, hh, mx, my) = (600,400, 25, 25);
     let mut image = RgbImage::new(ww, hh);
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font_vec = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
     let font = FontVec::try_from_vec(font_vec).expect("Font Vec");
@@ -687,7 +691,7 @@ fn pv_png_sub_map_gen(pv: String) -> Vec<u8> {
         //println!("{} - sub:{}", pv, sbs.len());
         for sb in sbs {
             //println!("  sb:{}", sb);
-            if let (Some((x,y)),Some(sbif)) = (sub_loc().get(sb), sub_inf().get(sb)) {
+            if let (Some((x,y)),Some(_sbif)) = (sub_loc().get(sb), sub_inf().get(sb)) {
                 pnts.push((*x as f32, *y as f32, sb.to_string()));
             }
         }
@@ -733,8 +737,8 @@ fn pv_png_sub_map_gen(pv: String) -> Vec<u8> {
         draw_line_segment_mut(&mut image, (0.0, 0.0), (0.0, 0.0+hy+fl), blk);
         draw_line_segment_mut(&mut image, (0.0+wx+fl, 0.0), (0.0+wx+fl, 0.0+hy+fl), blk);
 
-        let pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
-        let fmw = if x1-x0>y1-y0 { wx } else { hy };
+        let _pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
+        let _fmw = if x1-x0>y1-y0 { wx } else { hy };
 
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
@@ -806,8 +810,8 @@ pub async fn pv_png_sub_map(Path(pvnm): Path<String>) -> impl axum::response::In
 }
 
 use crate::sg::gis1::ar_list;
-use crate::sg::gis1::gis_dir;
-use crate::sg::gis1::db1_dir;
+//use crate::sg::gis1::gis_dir;
+//use crate::sg::gis1::db1_dir;
 use crate::sg::gis1::db2_dir;
 use crate::sg::gis1::DbfVal;
 use std::io::BufReader;
@@ -947,7 +951,7 @@ pub async fn prc53() -> Result<(), Box<dyn std::error::Error>> {
     if let Ok(ser) = bincode::serialize(&pv_rg_mp) {
         std::fs::write(file, ser).unwrap();
     }
-    let pv_rg_mp2 = ld_pv_rg_mp();
+    let _pv_rg_mp2 = ld_pv_rg_mp();
     //println!("{} = {}", pv_rg_mp.len(), pv_rg_mp2.len());
 
     Ok(())
@@ -991,7 +995,7 @@ pub async fn fd_pg_ym(Path((fdid,ym)): Path<(String,String)>) -> impl axum::resp
     tmp.title = title.to_string();
     tmp.fdid = fdid.to_string();
     tmp.ym = ym.to_string();
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (_st,_ed,d1,d2) = month_st_ed(&ym);
     if d2-d1<100 {
         for i in d1..=d2 {
             tmp.dts.push(format!("D{}",i));
@@ -1032,15 +1036,15 @@ pub async fn fd_png_ym(Path((fdid,ym)): Path<(String,String)>) -> impl axum::res
 
 use crate::sg::prc6::ld_p61_fd_calc;
 fn fd_png_ym_gen(fdid: String, ym: String) -> Vec<u8> {
-    let (st,ed,d1,d2) = month_st_ed(&ym);
+    let (st,ed,_d1,_d2) = month_st_ed(&ym);
     //println!("II: {} = {}-{} {}-{}", ym, st, ed, d1, d2);
     let fd_dir = format!("{}/fd_ym", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&fd_dir);
+    let _ = std::fs::create_dir_all(&fd_dir);
     let fd_file = format!("{}/fd_ym_{}_{}.png", fd_dir, fdid, ym);
 
-    let wht = Rgb([255u8, 255u8, 255u8]);
-    let blk = Rgb([0u8, 0u8, 0u8]);
-    let mut data = vec![
+    let _wht = Rgb([255u8, 255u8, 255u8]);
+    let _blk = Rgb([0u8, 0u8, 0u8]);
+    let /*mut*/ _data = vec![
         vec![(0f64,1f64), (1f64,2f64), (2f64,1f64), (3f64,2f64), (4f64,1f64), (5f64,2f64), ],
     ];
 
@@ -1075,7 +1079,7 @@ fn fd_png_ym_gen(fdid: String, ym: String) -> Vec<u8> {
         .build_cartesian_2d(0.0..24.0, minv..maxv)
         .unwrap();
     ctx.configure_mesh().draw().unwrap();
-    for (i, ls) in data.iter().enumerate() {
+    for (_i, ls) in data.iter().enumerate() {
         ctx.draw_series(LineSeries::new(
             ls.iter().map(|(x, y)| (*x, *y)),
             RGBColor(0, 0, 0),
@@ -1149,7 +1153,7 @@ use imageproc::drawing::draw_hollow_circle_mut;
 
 fn fd_png_map_gen(fdid: String) -> Vec<u8> {
     let fd_dir = format!("{}/fd_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&fd_dir);
+    let _ = std::fs::create_dir_all(&fd_dir);
     let fd_file = format!("{}/fd_map_{}.png", fd_dir, fdid);
     //println!("fd: {}", fd_file);
 
@@ -1166,8 +1170,8 @@ fn fd_png_map_gen(fdid: String) -> Vec<u8> {
     let grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font_vec = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = FontVec::try_from_vec(font_vec).expect("Font Vec");
-    let uniform_scale_24px = PxScale::from(24.0);
+    let _font = FontVec::try_from_vec(font_vec).expect("Font Vec");
+    let _uniform_scale_24px = PxScale::from(24.0);
 
     draw_filled_rect_mut(&mut image, Rect::at(0, 0).of_size(ww, hh), wht);
 
@@ -1187,7 +1191,7 @@ fn fd_png_map_gen(fdid: String) -> Vec<u8> {
     let mut pnts = Vec::<(f32,f32,String)>::new();
     let trlo = ld_p63_fd_tr_lo(&fdid);
     //println!("trlo: {}", trlo.len());
-    for (tr,fo) in trlo {
+    for (_tr,fo) in trlo {
         let pn = (fo.x as f32, fo.y as f32, "X".to_string());
         pnts.push(pn);
         //println!("{} {} {} {}", fo.feeder_id, fo.facility_id, fo.x, fo.y);
@@ -1202,8 +1206,8 @@ fn fd_png_map_gen(fdid: String) -> Vec<u8> {
             if pn.1>y1 { y1 = pn.1; }
         }
         //println!("C2: {},{} - {},{}", x0,y0, x1,y1);
-        let pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
-        let fmw = if x1-x0>y1-y0 { wx } else { hy };
+        let _pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
+        let _fmw = if x1-x0>y1-y0 { wx } else { hy };
 
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
@@ -1284,11 +1288,11 @@ fn fd_pop_map_gen(fdid: &String) -> String {
     let hy = (hh - 2*my) as f32;
     let xo = mx as f32;
     let yo = my as f32;
-    let fl = 2.0 * mx as f32 - 1.0;
+    let _fl = 2.0 * mx as f32 - 1.0;
 
     let mut pnts = Vec::<(f32,f32,String)>::new();
     let trlo = ld_p63_fd_tr_lo(&fdid);
-    for (tr,fo) in trlo {
+    for (_tr,fo) in trlo {
         let pn = (fo.x as f32, fo.y as f32, fo.facility_id.to_string());
         pnts.push(pn);
     }
@@ -1303,8 +1307,8 @@ fn fd_pop_map_gen(fdid: &String) -> String {
         }
 
         //println!("C2: {},{} - {},{}", x0,y0, x1,y1);
-        let pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
-        let fmw = if x1-x0>y1-y0 { wx } else { hy };
+        let _pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
+        let _fmw = if x1-x0>y1-y0 { wx } else { hy };
 
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
@@ -1325,12 +1329,14 @@ fn fd_pop_map_gen(fdid: &String) -> String {
                 ofx = of;
             }
         }
+        /*
         for pn in &sb_pnts {
             let xx = xo + (pn.0 - x0) / pnw * fmw + ofx;
             let yy = yo + hy - (pn.1 - y0) / pnw * fmw + ofy;
         }
+        */
         use std::fmt::Write;
-        write!(pop, "<map name='image-map'>\n");
+        write!(pop, "<map name='image-map'>\n").unwrap();
         for pn in &pnts {
             let xx = xo + (pn.0 - x0) / pnw * fmw + ofx;
             let yy = yo + hy - (pn.1 - y0) / pnw * fmw + ofy;
@@ -1338,9 +1344,9 @@ fn fd_pop_map_gen(fdid: &String) -> String {
             let xi = xx as i32;
             let yi = yy as i32;
             let co = format!("{},{},{},{}",xi-5, yi-5, xi+5, yi+5);
-            write!(pop, "<area target='GMAP' alt='A-{}' title='เลขหม้อแปลง\n {}' href='#' coords='{}' shape='rect'>\n", pn.2, pn.2, co);
+            write!(pop, "<area target='GMAP' alt='A-{}' title='เลขหม้อแปลง\n {}' href='#' coords='{}' shape='rect'>\n", pn.2, pn.2, co).unwrap();
         }
-        write!(pop, "</map>\n");
+        write!(pop, "</map>\n").unwrap();
     }
     pop
 }
@@ -1388,7 +1394,7 @@ pub async fn tr_pg_map(Path((fdid,trid)): Path<(String,String)>) -> impl axum::r
     //pub fn ld_p68_mt_mp(fd: &String) -> HashMap::<String,Prc6MeterInfo2> {
 
     let trs = ld_p62_fd_trans(&fdid);
-    let mut no = 0;
+    let /*mut*/ _no = 0;
     let mut trx = Transformer::default();
     for tr in trs {
         if tr.tx_id==trid {
@@ -1438,15 +1444,15 @@ pub async fn tr_png_map(Path((fdid, trid)): Path<(String,String)>) -> impl axum:
 
 fn tr_png_map_gen(fdid: String, trid: String) -> Vec<u8> {
     let fd_dir = format!("{}/tr_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&fd_dir);
+    let _ = std::fs::create_dir_all(&fd_dir);
     let fd_file = format!("{}/tr_map_{}.png", fd_dir, fdid);
     //println!("fd: {}", fd_file);
 
     let trs = ld_p62_fd_trans(&fdid);
-    let mut trx = Transformer::default();
+    //let mut trx = Transformer::default();
     for tr in trs {
         if tr.tx_id==trid {
-            trx = tr.clone();
+            //trx = tr.clone();
             break;
         }
     }
@@ -1468,11 +1474,11 @@ fn tr_png_map_gen(fdid: String, trid: String) -> Vec<u8> {
     let (ww, hh, mx, my) = (600,400, 25, 25);
     let mut image = RgbImage::new(ww, hh);
     let wht = Rgb([255u8, 255u8, 255u8]);
-    let grn = Rgb([0u8, 130u8, 0u8]);
+    let _grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font_vec = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = FontVec::try_from_vec(font_vec).expect("Font Vec");
-    let uniform_scale_24px = PxScale::from(24.0);
+    let _font = FontVec::try_from_vec(font_vec).expect("Font Vec");
+    let _uniform_scale_24px = PxScale::from(24.0);
 
     draw_filled_rect_mut(&mut image, Rect::at(0, 0).of_size(ww, hh), wht);
 
@@ -1513,8 +1519,8 @@ fn tr_png_map_gen(fdid: String, trid: String) -> Vec<u8> {
             if pn.1>y1 { y1 = pn.1; }
         }
         //println!("C2: {},{} - {},{}", x0,y0, x1,y1);
-        let pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
-        let fmw = if x1-x0>y1-y0 { wx } else { hy };
+        let _pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
+        let _fmw = if x1-x0>y1-y0 { wx } else { hy };
 
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
@@ -1588,14 +1594,14 @@ fn tr_png_map_gen(fdid: String, trid: String) -> Vec<u8> {
 
 fn tr_pop_map_gen(fdid: String, trid: String) -> String {
     let fd_dir = format!("{}/tr_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&fd_dir);
-    let fd_file = format!("{}/tr_map_{}.png", fd_dir, fdid);
+    let _ = std::fs::create_dir_all(&fd_dir);
+    let _fd_file = format!("{}/tr_map_{}.png", fd_dir, fdid);
 
     let trs = ld_p62_fd_trans(&fdid);
-    let mut trx = Transformer::default();
+    //let mut trx = Transformer::default();
     for tr in trs {
         if tr.tx_id==trid {
-            trx = tr.clone();
+            //trx = tr.clone();
             break;
         }
     }
@@ -1620,7 +1626,7 @@ fn tr_pop_map_gen(fdid: String, trid: String) -> String {
     let hy = (hh - 2*my) as f32;
     let xo = mx as f32;
     let yo = my as f32;
-    let fl = 2.0 * mx as f32 - 1.0;
+    let _fl = 2.0 * mx as f32 - 1.0;
 
     let mut sb_pnts = Vec::<(f32,f32,String)>::new();
     let mut pnts = Vec::<(f32,f32,String)>::new();
@@ -1641,7 +1647,7 @@ fn tr_pop_map_gen(fdid: String, trid: String) -> String {
     use std::fmt::Write;
 
     let mut pop = String::new();
-    write!(pop, "<map name='image-map'>\n");
+    write!(pop, "<map name='image-map'>\n").unwrap();
     if pnts.len()>0 {
         let (mut x0,mut x1,mut y0, mut y1) = (pnts[0].0,pnts[0].0, pnts[0].1,pnts[0].1);
         for pn in &pnts {
@@ -1650,8 +1656,8 @@ fn tr_pop_map_gen(fdid: String, trid: String) -> String {
             if pn.1<y0 { y0 = pn.1; }
             if pn.1>y1 { y1 = pn.1; }
         }
-        let pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
-        let fmw = if x1-x0>y1-y0 { wx } else { hy };
+        let _pnw = if x1-x0>y1-y0 { x1 - x0 } else { y1 - y0 };
+        let _fmw = if x1-x0>y1-y0 { wx } else { hy };
 
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
@@ -1680,22 +1686,22 @@ fn tr_pop_map_gen(fdid: String, trid: String) -> String {
             let xx = xo + (pn.0 - x0) / pnw * fmw + ofx;
             let yy = yo + hy - (pn.1 - y0) / pnw * fmw + ofy;
 
-            let w = 3.0;
+            let _w = 3.0;
             let xi = xx as i32;
             let yi = yy as i32;
             let co = format!("{},{},{},{}",xi-5, yi-5, xi+5, yi+5);
-            write!(pop, "<area target='GMAP' alt='A-{}' title='เลขมิเตอร์\n {}' href='#' coords='{}' shape='rect'>\n", pn.2, pn.2, co);
+            write!(pop, "<area target='GMAP' alt='A-{}' title='เลขมิเตอร์\n {}' href='#' coords='{}' shape='rect'>\n", pn.2, pn.2, co).unwrap();
         }
 
     }
-    write!(pop, "</map>\n");
+    write!(pop, "</map>\n").unwrap();
     pop
 }
 
 /////////////////////////////////////////////////////////////
 fn th_png_map_gen() -> Vec<u8> {
     let th_dir = format!("{}/th_map", crate::sg::imp::data_dir());
-    std::fs::create_dir_all(&th_dir);
+    let _ = std::fs::create_dir_all(&th_dir);
     let th_file = format!("{}/th_map.png", th_dir);
 
     let (ww, hh, mx, my) = (400,600, 25, 25);
@@ -1704,16 +1710,16 @@ fn th_png_map_gen() -> Vec<u8> {
     let grn = Rgb([0u8, 130u8, 0u8]);
     let blk = Rgb([0u8, 0u8, 0u8]);
     let font_vec = Vec::from(include_bytes!("THSarabunNew.ttf") as &[u8]);
-    let font = FontVec::try_from_vec(font_vec).expect("Font Vec");
-    let uniform_scale_24px = PxScale::from(24.0);
+    let _font = FontVec::try_from_vec(font_vec).expect("Font Vec");
+    let _uniform_scale_24px = PxScale::from(24.0);
 
-    use crate::sg::prc5::DbfVal::Float;
+    //use crate::sg::prc5::DbfVal::Float;
     let mut pv_rgs = Vec::<(String, Vec::<Vec::<(f64, f64)>>, f32)>::new();
     let (mut avmx, mut avmn) = (0f32, 0f32);
     let mut b_fst = true;
     let mut cnt = 0usize;
     for (pv,rg) in pv_rg_map() {
-        let mut pwavg = 0f32;
+        let /*mut*/ pwavg = 0f32;
         if let Some(calc) = prv_calc().get(pv) {
             let va = calc.year_load.power_quality.pos_avg;
             println!("{} va: {}", pv, va);
@@ -1736,7 +1742,7 @@ fn th_png_map_gen() -> Vec<u8> {
         let (x,y) = &pv_rgs[0].1[0][0];
         let (x,y) = (*x, *y);
         let (mut x0, mut x1, mut y0, mut y1) = (x as f32,x as f32,y as f32,y as f32);
-        for (pv, rg, av) in &pv_rgs {
+        for (_pv, rg, _av) in &pv_rgs {
             //println!("{} - {}", pv, rg.len());
             for pg in rg {
                 for pp in pg {
@@ -1784,8 +1790,8 @@ fn th_png_map_gen() -> Vec<u8> {
         use imageproc::drawing::draw_hollow_polygon_mut;
         use imageproc::drawing::draw_polygon_mut;
 
-        for (pv, rg, av) in &pv_rgs {
-            let lv = -1;
+        for (_pv, rg, _av) in &pv_rgs {
+            let _lv = -1;
             //println!("{} av:{} mn:{} mx:{}", pv, av, avmn, avmx);
             for pg in rg {
                 if pg.len()<2 { continue; }
@@ -1833,13 +1839,13 @@ pub async fn th_png_map() -> impl axum::response::IntoResponse {
 fn th_pop_map_gen() -> String {
     let mut pop = String::new();
     let (ww, hh, mx, my) = (400,600, 25, 25);
-    use crate::sg::prc5::DbfVal::Float;
+    //use crate::sg::prc5::DbfVal::Float;
     let mut pv_rgs = Vec::<(String, Vec::<Vec::<(f64, f64)>>, f32)>::new();
     let (mut avmx, mut avmn) = (0f32, 0f32);
     let mut b_fst = true;
     let mut cnt = 0usize;
     for (pv,rg) in pv_rg_map() {
-        let mut pwavg = 0f32;
+        let /*mut*/ pwavg = 0f32;
         if let Some(calc) = prv_calc().get(pv) {
             let va = calc.year_load.power_quality.pos_avg;
             println!("{} va: {}", pv, va);
@@ -1861,7 +1867,7 @@ fn th_pop_map_gen() -> String {
         let (x,y) = &pv_rgs[0].1[0][0];
         let (x,y) = (*x, *y);
         let (mut x0, mut x1, mut y0, mut y1) = (x as f32,x as f32,y as f32,y as f32);
-        for (pv, rg, av) in &pv_rgs {
+        for (_pv, rg, _av) in &pv_rgs {
             //println!("{} - {}", pv, rg.len());
             for pg in rg {
                 for pp in pg {
@@ -1877,7 +1883,7 @@ fn th_pop_map_gen() -> String {
         let hy = (hh - 2*my) as f32;
         let xo = mx as f32;
         let yo = my as f32;
-        let fl = 2.0 * mx as f32 - 1.0;
+        let _fl = 2.0 * mx as f32 - 1.0;
         let (mut pnw, mut fmw, mut ofx, mut ofy) = (0f32,0f32,0f32,0f32);
         if y1>y0 {
             let prt = (x1-x0)/(y1-y0);
@@ -1902,9 +1908,9 @@ fn th_pop_map_gen() -> String {
 
         use imageproc::point::Point;
         use std::fmt::Write;
-        write!(pop, "<map name='image-map'>\n");
-        for (pv, rg, av) in &pv_rgs {
-            let lv = -1;
+        write!(pop, "<map name='image-map'>\n").unwrap();
+        for (pv, rg, _av) in &pv_rgs {
+            let _lv = -1;
             //println!("{} av:{} mn:{} mx:{}", pv, av, avmn, avmx);
             for pg in rg {
                 if pg.len()<2 { continue; }
@@ -1926,14 +1932,14 @@ fn th_pop_map_gen() -> String {
                 if pli.len()>5 {
                     let mut cos = String::new();
                     for pn in &pli {
-                        if cos.len()>0 { write!(cos, ","); }
-                        write!(cos, "{},{}", pn.x, pn.y);
+                        if cos.len()>0 { write!(cos, ",").unwrap(); }
+                        write!(cos, "{},{}", pn.x, pn.y).unwrap();
                     }
-                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/p54/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", pv, pv, pv, cos);
+                    write!(pop, "<area target='GMAP' alt='A-{}' title='{}' href='/p54/pv_pg_sub_map/{}' coords='{}' shape='poly'>\n", pv, pv, pv, cos).unwrap();
                 }
             }
         }
-        write!(pop, "</map>\n");
+        write!(pop, "</map>\n").unwrap();
     }
     pop
 }
@@ -1958,8 +1964,8 @@ pub async fn th_pg_map() -> impl axum::response::IntoResponse {
 
 ///////////////////////////////////////////////////////
 pub async fn prc54() -> Result<(), Box<dyn std::error::Error>> {
-    let prv = pv_sub_init();
-    let base = crate::sg::ldp::base();
+    let _prv = pv_sub_init();
+    let _base = crate::sg::ldp::base();
     let app = Router::new()
         .route("/p54/", get(prvs_pg))
         .route("/p54/pv_dw/:pvnm", get(pv_dw))

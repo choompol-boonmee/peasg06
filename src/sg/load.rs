@@ -1,15 +1,16 @@
-use super::dcl::{BaseData, Config};
-use crate::sg::dcl;
-use serde::{Deserialize, Serialize};
+//use super::dcl::{BaseData, Config};
+//use crate::sg::dcl;
+//use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 
-// month data from Jan 15
+#[allow(dead_code)]
 const SUN_LIGHT: [f64; 12] = [
     -6.54_f64, 6.66, 12.60, 17.31, 8.42, 1.27, -4.18, -6.70, -4.71, -3.95, -8.48, -11.70,
 ];
 
+#[allow(dead_code)]
 pub fn get_sun_light() -> Vec<f64> {
     let mut ret = vec![0f64; 365];
     let mut po = 15;
@@ -37,7 +38,7 @@ pub fn get_sun_light() -> Vec<f64> {
     ret
 }
 
-// map by provice, 360 days
+#[allow(dead_code)]
 pub fn load_rain() -> HashMap<String, Vec<f64>> {
     //if let Ok(file) = File::open("data/pvrnyr.bin") {
     if let Ok(file) = File::open(crate::sg::ldp::res("pvrnyr.bin")) {
@@ -79,7 +80,7 @@ pub fn load_pvcamp() -> HashMap<String, f64> {
     HashMap::new()
 }
 
-// gpp per province
+#[allow(dead_code)]
 pub fn load_gpp() -> HashMap<String, f64> {
     //if let Ok(file) = File::open("data/pvgprt.bin") {
     if let Ok(file) = File::open(crate::sg::ldp::res("pvgprt.bin")) {

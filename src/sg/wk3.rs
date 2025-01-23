@@ -1,16 +1,18 @@
+
+#[allow(dead_code)]
 pub async fn run() {
     Task::default().work().await
 }
 use crate::sg::dcl;
 use crate::sg::ldp::base;
-use askama::Template;
-use askama_axum;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
-use std::sync::OnceLock;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+//use askama::Template;
+//use askama_axum;
+//use std::collections::HashMap;
+//use std::fs::File;
+//use std::io::BufReader;
+//use std::sync::OnceLock;
+//use tokio::sync::mpsc;
+//use tokio::sync::oneshot;
 
 #[derive(Debug, Clone, Default)]
 pub struct Substation {
@@ -22,8 +24,10 @@ pub struct Substation {
 
 #[derive(Debug, Clone, Default)]
 pub struct FeederLoad {
+    #[allow(dead_code)]
     pub sbst: String,
     pub feed: String,
+    #[allow(dead_code)]
     pub fstday: i32,
     pub good: i32,
     pub null: i32,
@@ -37,14 +41,15 @@ pub struct FeederLoad {
 pub struct Task {}
 
 impl Task {
+    #[allow(dead_code)]
     pub async fn work(&mut self) {
         let base = base();
         let sbvc = base.sbvc_2022.read().await;
         let sbmp = base.sbmp_2022.read().await;
         //let mut sbvc = sbvc.clone();
         //let mut sbmp = sbmp.clone();
-        let (mut c1, mut c2) = (0, 0);
-        let (mut d1, mut d2) = (0, 0);
+        //let (/*mut*/ _c1, /*mut*/ _c2) = (0, 0);
+        //let (/*mut d1*/, /*mut*/ d2) = (0, 0);
         let pvm = base.ss_pv_mp.read().await;
         //let mut ssm = HashMap::new();
         let mut ssv = Vec::new();
@@ -55,7 +60,7 @@ impl Task {
             if let Some(p) = pvm.get(sb) {
                 ss.prov = p.to_string();
             }
-            d1 += 1;
+            //d1 += 1;
             let sb = sb.clone();
             let vfd = sbmp.get(&sb).unwrap();
             let mut vldp = Vec::<Box<FeederLoad>>::new();
@@ -66,7 +71,7 @@ impl Task {
                 fd.feed = f.feed.to_string();
                 let mut tr = f.time_r.clone();
                 let mut tg = -1;
-                let mut gd = 0;
+                //let /*mut*/ gd = 0;
                 for d in 0..365 {
                     let mut cc = 0;
                     let ts = d * 48;
@@ -76,7 +81,7 @@ impl Task {
                         } else if let crate::sg::dcl::LoadProfVal::None = tr[tt] {
                             cc += 1;
                         } else {
-                            gd += 1;
+                            //gd += 1;
                         }
                     }
                     if cc == 0 {

@@ -1,32 +1,34 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, uty::NumForm, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp*/ ldp::base, uty::NumForm, wk5};
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
+//use askama_axum;
+use axum::extract::{Path, /*Query*/};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+//use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
+//use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use financial;
 //use thousands::Separable;
 use tokio::sync::RwLock;
-use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
+//use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
 
 #[derive(Template, Debug)]
 #[template(path = "pg2/wk5x.html", escape = "none")]
 pub struct ReportTemp {
     pub title: String,
-    pub wk: OwnedRwLockReadGuard<wk5::Wk5Proc>,
-	pub ssid: String,
+    //pub wk: OwnedRwLockReadGuard<wk5::Wk5Proc>,
+	//pub ssid: String,
 	pub repo: Report,
 }
 
+/*
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
     &wk5prc.wk5x4
 }
 fn sp(wk5prc: &mut wk5::Wk5Proc, rp: Report) {
     wk5prc.wk5x4 = rp;
 }
+*/
 
 impl ReportTemp {
     pub fn repo(&self) -> &Report {
@@ -322,10 +324,10 @@ impl ReportTemp {
 		repo.rows.push(rw_cost_15);
 		*/
 		
-        ReportTemp { wk, title, ssid, repo, }
+        ReportTemp { /*wk,*/ title/*ssid*/, repo, }
     }
     pub fn cell(&self, r: &usize, c: &usize) -> String {
-        let mut ce = self.repo.dava(*r, *c);
+        let ce = self.repo.dava(*r, *c);
         match ce {
             DaVa::Text(s) => s,
             DaVa::F32(f) => f.form(),
@@ -354,7 +356,7 @@ pub struct RepoRow1 {
 
 const TT: [&str; 4] = ["NO", "ITEM NAME ---------", "SUM1", "SUM2"];
 
-pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
+pub async fn make_repo(_wk5prc: &mut wk5::Wk5Proc, _acfg: Arc<RwLock<dcl::Config>>) {
 }
 
 impl Report {

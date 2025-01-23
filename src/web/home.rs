@@ -1,31 +1,36 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, uty::NumForm, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp*/ ldp::base, uty::NumForm, wk5};
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
-use regex::Regex;
+//use askama_axum;
+//use axum::extract::{Path, Query};
+//use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+//use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
+use std::collections::{HashMap, /*HashSet*/};
 use std::sync::Arc;
 //use thousands::Separable;
 use tokio::sync::RwLock;
-use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
+use tokio::sync::{OwnedRwLockReadGuard, /*RwLockReadGuard*/};
 
 #[derive(Template, Debug)]
 #[template(path = "pg2/home.html", escape = "none")]
 pub struct ReportTemp {
     pub title: String,
+    #[allow(dead_code)]
     pub wk: OwnedRwLockReadGuard<wk5::Wk5Proc>,
 }
 
+#[allow(dead_code)]
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
     &wk5prc.home
 }
+
+#[allow(dead_code)]
 fn sp(wk5prc: &mut wk5::Wk5Proc, rp: Report) {
     wk5prc.home = rp;
 }
 
 impl ReportTemp {
+    #[allow(dead_code)]
     pub fn repo(&self) -> &Report {
         &self.wk.home
     }
@@ -36,6 +41,7 @@ impl ReportTemp {
 
         ReportTemp { wk, title }
     }
+    #[allow(dead_code)]
     pub fn sum(&self, c: &usize) -> String {
         if *c == 0 {
             return format!("");
@@ -49,6 +55,7 @@ impl ReportTemp {
             _ => format!(""),
         }
     }
+    #[allow(dead_code)]
     pub fn cell(&self, r: &usize, c: &usize) -> String {
         let mut ce = rp(&self.wk).dava(&self.wk.ssv, *r, *c);
         if *c == 5 {
@@ -98,14 +105,16 @@ pub struct RepoRow1 {
 	pub ener: f32,
 }
 
+#[allow(dead_code)]
 const TT: [&str; 9] = [
     "NO", "PROV", "DTX", "M1P", "M3P", "COST", "FINA", "FIRR", "ENER",
 ];
 
+#[allow(dead_code)]
 pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
 
-    let cfg = acfg.read().await;
+    let _cfg = acfg.read().await;
     for t in TT {
         repo.cols.push(t.to_string());
         repo.sums.push(DaVa::None);
@@ -123,7 +132,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
     }
 
 	let mut e0 = 0f32;
-    for (si, ss) in wk5prc.ssv.iter().enumerate() {
+    for (si, _ss) in wk5prc.ssv.iter().enumerate() {
 		for fi in 0..wk5prc.ssv[si].feeders.len() {
 			let fd = &wk5prc.ssv[si].feeders[fi];
 			e0 += fd.year_load.power_quality.pos_energy;
@@ -133,8 +142,8 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 	
 	let mut sia = 0;
 	let (mut m1,mut m3) = (0,0);
-    for (pi, pv) in pvs.iter().enumerate() {
-		let mut ok = true;
+    for (_pi, pv) in pvs.iter().enumerate() {
+		let /*mut*/ _ok = true;
 		if !PRV1.contains(&pv.as_str()) {
 			continue;
 		}
@@ -188,7 +197,7 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 			if rw.firr > 0f32 {
 				repo.rows.push(rw);
 				for si in siv {
-					let ss = &wk5prc.ssv[*si];
+					let _ss = &wk5prc.ssv[*si];
 					for fi in 0..wk5prc.ssv[*si].feeders.len() {
 						let fd = &wk5prc.ssv[*si].feeders[fi];
 						let mut rw2 = RepoRow1::default();
@@ -214,10 +223,11 @@ pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>
 }
 
 impl Report {
+    #[allow(dead_code)]
     pub fn dava(&self, ssv: &Vec<wk5::Substation>, r: usize, c: usize) -> dcl::DaVa {
         let s = self.rows[r].s;
         let f = self.rows[r].f;
-        let ss = &ssv[s];
+        let _ss = &ssv[s];
         let fd = &ssv[s].feeders[f];
         match c {
             0 => DaVa::USZ(r + 1),
@@ -235,6 +245,7 @@ impl Report {
     }
 }
 
+#[allow(dead_code)]
 const PRV1: [&str; 24] = [
 "ระยอง",
 "ชลบุรี",
@@ -270,6 +281,7 @@ pub async fn handler() -> ReportTemp {
     ReportTemp::new(base().wk5prc.clone()).await
 }
 
+#[allow(dead_code)]
 fn sum(repo: &mut Report, ssv: &Vec<wk5::Substation>) {
     if repo.rows.len() > 0 {
         repo.sums[0] = DaVa::None;
@@ -283,10 +295,10 @@ fn sum(repo: &mut Report, ssv: &Vec<wk5::Substation>) {
                 _ => DaVa::None,
             };
         }
-        let mut txno = 0;
-        for (ri, rr) in repo.rows.iter().enumerate() {
-            if let DaVa::USZ(v) = repo.dava(ssv, ri, 5) {
-                txno += v;
+        //let mut txno = 0;
+        for (ri, __rr) in repo.rows.iter().enumerate() {
+            if let DaVa::USZ(_v) = repo.dava(ssv, ri, 5) {
+                //txno += v;
             }
 
             for ci in 0..repo.cols.len() {

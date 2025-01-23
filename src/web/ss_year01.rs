@@ -1,10 +1,10 @@
-use crate::sg::dcl;
+//use crate::sg::dcl;
 use crate::sg::ldp::base;
 use crate::sg::wk4;
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
-use serde::Deserialize;
+//use askama_axum;
+use axum::extract::{Path, /*Query*/};
+//use serde::Deserialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -27,7 +27,7 @@ impl SubstYearLoad {
     }
 }
 
-pub async fn handler(Path((ssid)): Path<(String)>) -> SubstYearLoad {
+pub async fn handler(Path(ssid): Path<String>) -> SubstYearLoad {
     let bs = base();
     SubstYearLoad::new(bs.wk4_ssv.clone(), ssid).await
 }

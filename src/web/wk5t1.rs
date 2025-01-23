@@ -1,15 +1,15 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, uty::NumForm, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp*/ ldp::base, uty::NumForm, wk5};
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
+//use askama_axum;
+//use axum::extract::{Path, Query};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+use std::cmp::{/*Eq, Ord, PartialEq,*/ PartialOrd};
+//use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 //use thousands::Separable;
 use tokio::sync::RwLock;
-use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
+use tokio::sync::{OwnedRwLockReadGuard, /*RwLockReadGuard*/};
 
 #[derive(Template, Debug)]
 #[template(path = "pg2/wk5f.html", escape = "none")]
@@ -90,10 +90,10 @@ pub struct RepoRow1 {
 
 const TT: [&str; 4] = ["NO", "PROV", "FDID", "TOTAL"];
 
-pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
+pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, _acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
 
-    let cfg = acfg.read().await;
+    //let cfg = acfg.read().await;
     for t in TT {
         repo.cols.push(t.to_string());
         repo.sums.push(DaVa::None);
@@ -188,10 +188,10 @@ fn sum(repo: &mut Report, ssv: &Vec<wk5::Substation>) {
                 _ => DaVa::None,
             };
         }
-        let mut txno = 0;
-        for (ri, rr) in repo.rows.iter().enumerate() {
-            if let DaVa::USZ(v) = repo.dava(ssv, ri, 5) {
-                txno += v;
+        //let mut txno = 0;
+        for (ri, _rr) in repo.rows.iter().enumerate() {
+            if let DaVa::USZ(_v) = repo.dava(ssv, ri, 5) {
+                //txno += v;
             }
 
             for ci in 0..repo.cols.len() {

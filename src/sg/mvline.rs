@@ -1,6 +1,6 @@
-use calamine::{deserialize_as_f64_or_none, open_workbook, RangeDeserializerBuilder, Reader, Xlsx};
+use calamine::{deserialize_as_f64_or_none, open_workbook, /*RangeDeserializerBuilder*/ Reader, Xlsx};
 use micromath::F32Ext;
-use shapefile::{Point, PolygonRing};
+//use shapefile::{Point, PolygonRing};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -60,7 +60,7 @@ pub fn utm_latlong(x: f32, y: f32) -> (f32, f32) {
 pub fn latlong_utm(e5: f32, f5: f32) -> (f32, f32) {
     let c12 = 6378137.0;
     let c13 = 6356752.31424518;
-    let c15 = (c12 * c12 - c13 * c13).sqrt() / c12;
+    let _c15 = (c12 * c12 - c13 * c13).sqrt() / c12;
     let c16 = (c12 * c12 - c13 * c13).sqrt() / c13;
     let c17 = c16 * c16;
     let c18 = c12.powf(2.0) / c13;
@@ -91,8 +91,10 @@ pub fn latlong_utm(e5: f32, f5: f32) -> (f32, f32) {
 
 #[derive(Deserialize)]
 struct Record {
+    #[allow(dead_code)]
     metric: String,
     #[serde(deserialize_with = "deserialize_as_f64_or_none")]
+    #[allow(dead_code)]
     value: Option<f64>,
 }
 
@@ -206,7 +208,7 @@ pub async fn read_lv_line() {
             print!("READ: {}\n", f);
             for result in reader.iter_shapes_and_records_as::<shapefile::Polyline, dbase::Record>()
             {
-                if let Ok((line, rc)) = result {
+                if let Ok((line, _rc)) = result {
                     for vpnts in line.into_inner() {
                         for pnt in vpnts {
                             let (lat, lng) = utm_latlong(pnt.x as f32, pnt.y as f32);
@@ -230,7 +232,7 @@ pub async fn read_trans_lv() {
     let lys = [
         "N1", "N2", "N3", "C1", "C2", "C3", "NE1", "NE2", "NE3", "S1", "S2", "S3",
     ];
-    let mut fst = true;
+    let /*mut*/ _fst = true;
     let mut mt_400 = 0;
     let mut mt_lng = 0;
     for r in lys {
@@ -238,15 +240,15 @@ pub async fn read_trans_lv() {
         print!("FILE {}\n", z1);
         if let Ok(rc) = dbase::read(z1) {
             for r in rc {
-                let mut mt = "".to_string();
+                //let mut mt = "".to_string();
                 let mut fd = "".to_string();
-                let mut ph = "".to_string();
-                let mut of = "".to_string();
-                let mut tx = "".to_string();
-                let mut sb = "".to_string();
-                let mut tp = "".to_string();
-                let mut ow = "".to_string();
-                let mut pw = 0f64;
+                //let mut ph = "".to_string();
+                //let mut of = "".to_string();
+                //let mut tx = "".to_string();
+                //let mut sb = "".to_string();
+                //let mut tp = "".to_string();
+                //let mut ow = "".to_string();
+                //let mut pw = 0f64;
                 let mut txlat = 0f64;
                 let mut txlng = 0f64;
                 let mut mtlat = 0f64;
@@ -264,14 +266,14 @@ pub async fn read_trans_lv() {
                         0f64
                     };
                     match nms.as_str() {
-                        "PEA_METER" => mt = v,
-                        "METER_PHAS" => ph = v,
-                        "TRF_PEA_NO" => tx = v,
-                        "TRF_KVA" => pw = n,
-                        "METER_AOJ" => of = v,
+                        "PEA_METER" => /*mt = v*/ {},
+                        "METER_PHAS" => /*ph = v*/ {},
+                        "TRF_PEA_NO" => /*tx = v*/ {},
+                        "TRF_KVA" => /*pw = n*/ {},
+                        "METER_AOJ" => /*of = v*/ {},
                         "TRF_FEEDER" => fd = v,
-                        "TRF_SUBTYP" => tp = v,
-                        "TRF_OWNER" => ow = v,
+                        "TRF_SUBTYP" => {}/*tp = v*/,
+                        "TRF_OWNER" => {}/*ow = v*/,
                         "TRF_LAT" => txlat = n,
                         "TRF_LONG" => txlng = n,
                         "MT_LAT" => mtlat = n,
@@ -281,7 +283,7 @@ pub async fn read_trans_lv() {
                     //print!("k: {}\n", nms);
                 }
                 if fd.len() > 3 {
-                    sb = fd[0..3].to_string();
+                    //sb = fd[0..3].to_string();
                 }
                 let (txx, txy) = latlong_utm(txlat as f32, txlng as f32);
                 let (mtx, mty) = latlong_utm(mtlat as f32, mtlng as f32);
@@ -359,6 +361,7 @@ pub struct SubInfo {
     pub cnt: usize,
 }
 
+#[allow(dead_code)]
 pub fn db1_dir() -> &'static str {
     "../sgdata/db1"
 }
@@ -381,7 +384,7 @@ pub async fn pea_sub_excel() -> Result<(), Box<dyn std::error::Error>> {
         let mvax = row[10].to_string();
         let feed = row[11].to_string();
     
-        if let Some(mut sbdt) = sbhs.get_mut(&sbid) {
+        if let Some(/*mut*/ sbdt) = sbhs.get_mut(&sbid) {
             sbdt.cnt += 1;
         } else {
             let sbid0 = sbid.clone();

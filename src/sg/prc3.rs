@@ -1,41 +1,33 @@
-use crate::sg::ldp::base;
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
-use crate::sg::ldp::FeederTranx;
-use std::fs::File;
-use std::fs;
-use std::io::BufReader;
-use crate::sg::ldp::TranxInfo;
-use crate::sg::imp::CSVFile;
-use crate::sg::imp::src_dir;
-use std::path::PathBuf;
-use crate::sg::imp::data_dir;
-use crate::sg::wk4::YearLoad;
-use crate::sg::ldp;
-use crate::sg::wk5::Tranx;
-use crate::sg::wk5::EvalPara1;
-use crate::sg::wk5::EvDistCalc;
-use crate::sg::prc1::SubstInfo;
-use crate::sg::wk4::Substation as Wk4Substation;
-use crate::sg::wk5::Substation as Wk5Substation;
-use crate::sg::wk4::Wk4Proc;
-use regex::Regex;
 use crate::sg::dcl::LoadProfVal;
-use crate::sg::wk4::DayLoad;
-use crate::sg::prc2::Transformer;
-use crate::sg::prc1::p1_spp_conn;
-use crate::sg::prc1::p1_vspp_conn;
-use crate::sg::prc1::grp1;
-use crate::sg::prc1::SPPConn;
-use crate::sg::prc1::VSPPConn;
-use crate::sg::imp::ld_replan;
-use crate::sg::imp::REPlan;
-use crate::sg::imp::ld_bisze;
 use crate::sg::gis1::ar_list;
 use crate::sg::gis1::DbfVal;
-use crate::sg::mvline::utm_latlong;
-use crate::sg::wk5::ld_fd_es_m;
+use crate::sg::imp::ld_replan;
+use crate::sg::imp::REPlan;
+use crate::sg::ldp::base;
 use crate::sg::mvline::latlong_utm;
+use crate::sg::mvline::utm_latlong;
+use crate::sg::prc1::grp1;
+use crate::sg::prc1::p1_spp_conn;
+use crate::sg::prc1::p1_vspp_conn;
+use crate::sg::prc1::SPPConn;
+use crate::sg::prc1::SubstInfo;
+use crate::sg::prc1::VSPPConn;
+use crate::sg::prc2::Transformer;
+use crate::sg::wk4::DayLoad;
+use crate::sg::wk4::Substation as Wk4Substation;
+use crate::sg::wk4::Wk4Proc;
+use crate::sg::wk4::YearLoad;
+use crate::sg::wk5::ld_fd_es_m;
+use crate::sg::wk5::EvDistCalc;
+use crate::sg::wk5::EvalPara1;
+use crate::sg::wk5::Substation as Wk5Substation;
+use crate::sg::wk5::Tranx;
+use regex::Regex;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
+use std::fs::File;
+use std::io::BufReader;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct DataCalc {
@@ -46,12 +38,6 @@ pub struct DataCalc {
     pub year_load: YearLoad,
     pub last_year_load: YearLoad,
 
-    //pub year_re: YearLoad,
-    //pub year_ev: YearLoad,
-    //pub outage_hour: f64,
-
-    //pub trans: Vec<ldp::FeederTranx>,
-    
     pub tx: Tranx,
     pub para1: EvalPara1,
     pub ev: EvDistCalc,
@@ -126,10 +112,10 @@ pub struct DataCalc {
     pub financial_benefit_npv_series: Vec<f32>,
     pub economic_benefit_npv_series: Vec<f32>,
     pub total_cost_npv_series: Vec<f32>,
-	pub firr_series: Vec<f32>,
-	pub eirr_series: Vec<f32>,
-	pub net_financial_return_series: Vec<f32>,
-	pub net_economic_return_series: Vec<f32>,
+    pub firr_series: Vec<f32>,
+    pub eirr_series: Vec<f32>,
+    pub net_financial_return_series: Vec<f32>,
+    pub net_economic_return_series: Vec<f32>,
 
     pub firr: f32,
     pub eirr: f32,
@@ -149,10 +135,10 @@ pub struct FeedTranMeter {
     pub mt_else: usize,
 }
 
-#[derive(Debug,Serialize,Deserialize,Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct PEAGrid {
     pub prvs: Vec<String>,
-    pub prv_sub: HashMap<String,Vec<String>>,
+    pub prv_sub: HashMap<String, Vec<String>>,
     pub sub_inf: HashMap<String, SubstInfo>,
     pub prv_calc: HashMap<String, DataCalc>,
     pub sub_calc: HashMap<String, DataCalc>,
@@ -162,34 +148,33 @@ pub struct PEAGrid {
 
 // PEA Grid
 pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
-
     let mut subinf = Vec::<SubstInfo>::new();
     if let Ok(file) = File::open(crate::sg::ldp::res("subinfo.bin")) {
         let rd = BufReader::new(file);
-        if let Ok(sbif)=bincode::deserialize_from::<BufReader<File>, Vec::<SubstInfo>>(rd) {
+        if let Ok(sbif) = bincode::deserialize_from::<BufReader<File>, Vec<SubstInfo>>(rd) {
             subinf = sbif;
         }
     }
     println!("read sub info");
 
     let mut prvs = Vec::<String>::new();
-    let mut prv_sub = HashMap::<String,Vec<String>>::new();
+    let mut prv_sub = HashMap::<String, Vec<String>>::new();
     let mut sub_inf = HashMap::<String, SubstInfo>::new();
-    let mut sub_ldp = HashMap::<String, Wk5Substation>::new();
+    let /*mut*/ _sub_ldp = HashMap::<String, Wk5Substation>::new();
 
     let mut prv_calc = HashMap::<String, DataCalc>::new();
     let mut sub_calc = HashMap::<String, DataCalc>::new();
     let mut feed_calc = HashMap::<String, DataCalc>::new();
-    
-    let mut sbids = HashMap::<String,i32>::new();
-    let mut cn = 0;
+
+    let mut sbids = HashMap::<String, i32>::new();
+    //let mut cn = 0;
     while let Some(sb) = subinf.pop() {
         sbids.insert(sb.sbid.to_string(), 1);
         if let Some(sbv) = prv_sub.get_mut(&sb.prov) {
             sbv.push(sb.sbid.to_string());
             sbv.sort();
         } else {
-            cn += 1;
+            //cn += 1;
             //println!("{}.{}-{}", cn, sb.prov, sb.sbid);
             let sbv = vec![sb.sbid.to_string()];
             prv_sub.insert(sb.prov.to_string(), sbv);
@@ -198,7 +183,6 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
             let mut prv = DataCalc::default();
             prv.prov = sb.prov.clone();
             prv_calc.insert(prv.prov.clone(), prv);
-    
         }
         if let Some(si) = sub_inf.get(&sb.sbid) {
             println!("repeted {}", si.sbid);
@@ -216,14 +200,16 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     println!("read load profile");
-    
-    let mut sbldp = HashMap::<String,i32>::new();
-    for sb in &subldp { sbldp.insert(sb.sbst.to_string(), 1); }
+
+    let mut sbldp = HashMap::<String, i32>::new();
+    for sb in &subldp {
+        sbldp.insert(sb.sbst.to_string(), 1);
+    }
 
     let mut cn = 0;
     println!("==== NO IN LOAD PROFILE ====");
-    for (s,_) in &sub_inf {
-        if let Some(s) = sbldp.get(s) {
+    for (s, _) in &sub_inf {
+        if let Some(_s) = sbldp.get(s) {
         } else {
             cn += 1;
             println!("{}. {}", cn, s);
@@ -233,7 +219,7 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
     let mut cn = 0;
     println!("==== NO IN SUBST LIST ====");
     for sb in &subldp {
-        if let Some(s) = sbids.get(&sb.sbst) {
+        if let Some(_s) = sbids.get(&sb.sbst) {
         } else {
             cn += 1;
             println!("{}. {}", cn, sb.sbst);
@@ -244,9 +230,8 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
     let cfg = cfg.read().await;
     let stw = cfg.criteria.solar_time_window;
 
-    let mut txno = 0;
+    let /*mut*/ _txno = 0;
     for ss in &mut subldp {
-
         let mut ss2 = DataCalc::default();
         ss2.ssid = ss.sbst.to_string();
         ss2.prov = ss.prov.to_string();
@@ -257,15 +242,26 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
         for fd in &ss.feeders {
             cn += 1;
             let fdid2 = fd.feed[4..6].to_string();
+            /*
             let mut fdno = 0;
             if let Ok(no) = fdid2.parse::<i32>() {
                 fdno = no;
             }
+            */
             let fdid = format!("{}{}", ss2.ssid, fdid2);
-            if re.is_match(&fd.feed) == false { continue }
+            if re.is_match(&fd.feed) == false {
+                continue;
+            }
             //println!("  {}.{}->{} : {}", cn, fd.feed, fdid, re.is_match(&fd.feed));
-            if let Some(fx) = feed_calc.get_mut(&fdid) { // if get feed
-                println!("======================  {}.{}->{} : {}", cn, fd.feed, fdid, re.is_match(&fd.feed));
+            if let Some(_fx) = feed_calc.get_mut(&fdid) {
+                // if get feed
+                println!(
+                    "======================  {}.{}->{} : {}",
+                    cn,
+                    fd.feed,
+                    fdid,
+                    re.is_match(&fd.feed)
+                );
             } else {
                 let mut fd2 = DataCalc::default();
                 fd2.prov = ss.prov.to_string();
@@ -279,7 +275,14 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
         sub_calc.insert(ss2.ssid.to_string(), ss2);
     }
 
-    let mut grd = PEAGrid { prvs, prv_sub, sub_inf, prv_calc, sub_calc, feed_calc };
+    let mut grd = PEAGrid {
+        prvs,
+        prv_sub,
+        sub_inf,
+        prv_calc,
+        sub_calc,
+        feed_calc,
+    };
 
     sub_ldp_calc(&mut grd).await;
     power_quality(&mut grd, stw).await;
@@ -314,45 +317,56 @@ pub async fn prc31() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn ld_p3_prvs() -> Vec::<String> {
+pub fn ld_p3_prvs() -> Vec<String> {
     if let Ok(f) = File::open(crate::sg::ldp::res("p3_prvs.bin")) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, Vec::<String>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<BufReader<File>, Vec<String>>(BufReader::new(f))
+        {
             return dt;
         }
     }
     Vec::<String>::new()
 }
 
-pub fn ld_p3_prv_sub() -> HashMap::<String,Vec<String>> {
+pub fn ld_p3_prv_sub() -> HashMap<String, Vec<String>> {
     if let Ok(f) = File::open(crate::sg::ldp::res("p3_prv_sub.bin")) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String,Vec<String>>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, Vec<String>>>(
+            BufReader::new(f),
+        ) {
             return dt;
         }
     }
-    HashMap::<String,Vec<String>>::new()
+    HashMap::<String, Vec<String>>::new()
 }
 
-pub fn ld_p3_sub_inf() -> HashMap::<String, SubstInfo> {
+pub fn ld_p3_sub_inf() -> HashMap<String, SubstInfo> {
     if let Ok(f) = File::open(crate::sg::ldp::res("p3_sub_inf.bin")) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String, SubstInfo>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, SubstInfo>>(
+            BufReader::new(f),
+        ) {
             return dt;
         }
     }
     HashMap::<String, SubstInfo>::new()
 }
 
-pub fn ld_fd_trs() -> HashMap::<String,Vec<Transformer>> {
+pub fn ld_fd_trs() -> HashMap<String, Vec<Transformer>> {
     if let Ok(f) = File::open(crate::sg::ldp::res("fd_trs.bin")) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String,Vec<Transformer>>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<
+            BufReader<File>,
+            HashMap<String, Vec<Transformer>>,
+        >(BufReader::new(f))
+        {
             return dt;
         }
     }
-    HashMap::<String,Vec<Transformer>>::new()
+    HashMap::<String, Vec<Transformer>>::new()
 }
 
-pub fn ld_p3_calc(fnm: &str) -> HashMap::<String, DataCalc> {
+pub fn ld_p3_calc(fnm: &str) -> HashMap<String, DataCalc> {
     if let Ok(f) = File::open(crate::sg::ldp::res(fnm)) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String, DataCalc>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, DataCalc>>(
+            BufReader::new(f),
+        ) {
             return dt;
         }
     }
@@ -360,42 +374,67 @@ pub fn ld_p3_calc(fnm: &str) -> HashMap::<String, DataCalc> {
 }
 
 pub async fn power_quality(grd: &mut PEAGrid, stw: f32) {
-    for pv in &grd.prvs { // for pv
-        if let (Some(sbs),Some(mut pvca)) = (grd.prv_sub.get(pv.as_str()), grd.prv_calc.get_mut(pv.as_str())) { // if pvca
-            for sb in sbs { // for sb
-                if let (Some(sbif),Some(mut sbca)) = (grd.sub_inf.get(sb.as_str()), grd.sub_calc.get_mut(sb.as_str())) { // if sub
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(mut fdca) = grd.feed_calc.get_mut(fd.as_str()) { // if fdca
-                            fdca.year_load.power(stw);
-                            fdca.last_year_load.power(stw);
+    for pv in &grd.prvs {
+        // for pv
+        if let (Some(sbs), Some(/*mut*/ pvca)) = (
+            grd.prv_sub.get(pv.as_str()),
+            grd.prv_calc.get_mut(pv.as_str()),
+        ) {
+            // if pvca
+            for sb in sbs {
+                // for sb
+                if let (Some(sbif), Some(/*mut*/ sbca)) = (
+                    grd.sub_inf.get(sb.as_str()),
+                    grd.sub_calc.get_mut(sb.as_str()),
+                ) {
+                    // if sub
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        if let Some(/*mut*/ fdca) = grd.feed_calc.get_mut(fd.as_str()) {
+                            // if fdca
+                            fdca.year_load.power(stw).await;
+                            fdca.last_year_load.power(stw).await;
                             println!("{} {} {}", pv, sb, fd);
                         } // if fdca
-                    }  // for feeders
-                    sbca.year_load.power(stw);
-                    sbca.last_year_load.power(stw);
+                    } // for feeders
+                    sbca.year_load.power(stw).await;
+                    sbca.last_year_load.power(stw).await;
                 } // if sub
             } // for day
-            pvca.year_load.power(stw);
-            pvca.last_year_load.power(stw);
+            pvca.year_load.power(stw).await;
+            pvca.last_year_load.power(stw).await;
         } // if pvca
     } // for pv
 }
 
-
 pub async fn sub_ldp_calc(grd: &mut PEAGrid) {
-    for pv in &grd.prvs { // for pv
-        if let (Some(sbs),Some(mut pvca)) = (grd.prv_sub.get(pv.as_str()), grd.prv_calc.get_mut(pv.as_str())) { // if pvca
+    for pv in &grd.prvs {
+        // for pv
+        if let (Some(sbs), Some(/*mut*/ pvca)) = (
+            grd.prv_sub.get(pv.as_str()),
+            grd.prv_calc.get_mut(pv.as_str()),
+        ) {
+            // if pvca
             let mut pv_val = [0f32; 365 * 48];
             let mut last_pv_val = [0f32; 365 * 48];
-            for sb in sbs { // for sb
-                if let (Some(sbif),Some(mut sbca)) = (grd.sub_inf.get(sb.as_str()), grd.sub_calc.get_mut(sb.as_str())) { // if sub
+            for sb in sbs {
+                // for sb
+                if let (Some(sbif), Some(/*mut*/ sbca)) = (
+                    grd.sub_inf.get(sb.as_str()),
+                    grd.sub_calc.get_mut(sb.as_str()),
+                ) {
+                    // if sub
                     let mut ss_val = [0f32; 365 * 48];
                     let mut last_ss_val = [0f32; 365 * 48];
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(fdca) = grd.feed_calc.get(fd.as_str()) { // if fdca
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        if let Some(fdca) = grd.feed_calc.get(fd.as_str()) {
+                            // if fdca
                             println!("{} {} {}", pv, sb, fd);
-                            for (di, dl) in fdca.year_load.loads.iter().enumerate() { // for day
-                                for (hi, hl) in dl.load.iter().enumerate() { // for hour
+                            for (di, dl) in fdca.year_load.loads.iter().enumerate() {
+                                // for day
+                                for (hi, hl) in dl.load.iter().enumerate() {
+                                    // for hour
                                     let ii = di * 48 + hi;
                                     if let LoadProfVal::Value(v) = hl {
                                         ss_val[ii] += v;
@@ -405,8 +444,10 @@ pub async fn sub_ldp_calc(grd: &mut PEAGrid) {
                                     }
                                 } // for hour
                             } // for day
-                            for (di, dl) in fdca.last_year_load.loads.iter().enumerate() { // for day
-                                for (hi, hl) in dl.load.iter().enumerate() { // for hour
+                            for (di, dl) in fdca.last_year_load.loads.iter().enumerate() {
+                                // for day
+                                for (hi, hl) in dl.load.iter().enumerate() {
+                                    // for hour
                                     let ii = di * 48 + hi;
                                     if let LoadProfVal::Value(v) = hl {
                                         last_ss_val[ii] += v;
@@ -419,42 +460,50 @@ pub async fn sub_ldp_calc(grd: &mut PEAGrid) {
                         } // if fdca
                     } // for feeders
                     sbca.year_load = YearLoad::default();
-                    for di in 0..365 { // for day
+                    for di in 0..365 {
+                        // for day
                         let mut day_load = DayLoad::default();
                         day_load.day = di + 1;
-                        for hi in 0..48 { // for hour
+                        for hi in 0..48 {
+                            // for hour
                             let ii = di * 48 + hi;
                             day_load.load.push(LoadProfVal::Value(ss_val[ii]));
                         } // for hour
                         sbca.year_load.loads.push(day_load);
                     } // for day
                     sbca.last_year_load = YearLoad::default();
-                    for di in 0..365 { // for day
+                    for di in 0..365 {
+                        // for day
                         let mut day_load = DayLoad::default();
                         day_load.day = di + 1;
-                        for hi in 0..48 { // for hour
+                        for hi in 0..48 {
+                            // for hour
                             let ii = di * 48 + hi;
                             day_load.load.push(LoadProfVal::Value(last_ss_val[ii]));
                         } // for hour
                         sbca.last_year_load.loads.push(day_load);
                     } // for day
-                }// if sub
+                } // if sub
             } // for sub
             pvca.year_load = YearLoad::default();
-            for di in 0..365 { // for day
+            for di in 0..365 {
+                // for day
                 let mut day_load = DayLoad::default();
                 day_load.day = di + 1;
-                for hi in 0..48 { // for hour
+                for hi in 0..48 {
+                    // for hour
                     let ii = di * 48 + hi;
                     day_load.load.push(LoadProfVal::Value(pv_val[ii]));
                 } // for hour
                 pvca.year_load.loads.push(day_load);
             } // for day
             pvca.last_year_load = YearLoad::default();
-            for di in 0..365 { // for day
+            for di in 0..365 {
+                // for day
                 let mut day_load = DayLoad::default();
                 day_load.day = di + 1;
-                for hi in 0..48 { // for hour
+                for hi in 0..48 {
+                    // for hour
                     let ii = di * 48 + hi;
                     day_load.load.push(LoadProfVal::Value(last_pv_val[ii]));
                 } // for hour
@@ -464,7 +513,6 @@ pub async fn sub_ldp_calc(grd: &mut PEAGrid) {
     } // for pv
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct TransEnergy {
     pub pv_id: String,
@@ -473,7 +521,9 @@ pub struct TransEnergy {
     pub tx_no: usize,
     pub tx_p: usize,
     pub tx_c: usize,
-    pub tx_pw_no: HashMap::<usize,(usize,usize,usize)>,
+    pub tx_pw_no: HashMap<usize, (usize, usize, usize)>,
+    pub txp_pw_no: HashMap<usize, (usize, usize, usize)>,
+    pub txc_pw_no: HashMap<usize, (usize, usize, usize)>,
     pub tx_mt_min: usize,
     pub tx_mt_max: usize,
     pub mt_ph_a: usize,
@@ -494,63 +544,59 @@ pub struct TransEnergy {
     pub eg2_c: f64,
     pub eg2_1p: f64,
     pub eg2_3p: f64,
-    pub eg2_sm: f64
+    pub eg2_sm: f64,
 }
 
 impl TransEnergy {
-    /*
-    fn add_treg(&mut self, tr: &TransEnergy) {
-        self.tx_no += tr.tx_no;
-        for (p,(cn1,mn1,mx1)) in &tr.tx_pw_no {
-            if let Some((cn,mn,mx)) = self.tx_pw_no.get_mut(p) {
-                *cn += cn1;
-                *mn = if *mn1<*mn { *mn1 } else { *mn };
-                *mx = if *mx1>*mx { *mx1 } else { *mx };
-            } else {
-                self.tx_pw_no.insert(*p, (*cn1,*mn1,*mx1));
-            }
-        }
-        let mn = tr.tx_mt_min;
-        self.tx_mt_min = if mn<self.tx_mt_min { mn } else { self.tx_mt_min };
-        let mx = tr.tx_mt_max;
-        self.tx_mt_max = if mx>self.tx_mt_max { mx } else { self.tx_mt_max };
-        self.mt_ph_a += tr.mt_ph_a;
-        self.mt_ph_b += tr.mt_ph_b;
-        self.mt_ph_c += tr.mt_ph_c;
-        self.mt_1_ph += tr.mt_1_ph;
-        self.mt_3_ph += tr.mt_3_ph;
-        self.mt_else += tr.mt_else;
-        self.mt_cnt += tr.mt_cnt;
-        self.eg5_a += tr.eg5_a;
-        self.eg5_b += tr.eg5_b;
-        self.eg5_c += tr.eg5_c;
-        self.eg5_1p += tr.eg5_1p;
-        self.eg5_3p += tr.eg5_3p;
-        self.eg5_sm += tr.eg5_sm;
-        self.eg2_a += tr.eg2_a;
-        self.eg2_b += tr.eg2_b;
-        self.eg2_c += tr.eg2_c;
-        self.eg2_1p += tr.eg2_1p;
-        self.eg2_3p += tr.eg2_3p;
-        self.eg2_sm += tr.eg2_sm;
-    }
-    */
     fn add_tr(&mut self, tr: &Transformer) {
         self.tx_no += 1;
-        if tr.tx_own=="P" { self.tx_p += 1; }
-        if tr.tx_own=="C" { self.tx_c += 1; }
-        let power = tr.tx_power as usize;
-        if let Some((cn,mn,mx)) = self.tx_pw_no.get_mut(&power) {
-            *cn += 1;
-            *mn = if tr.mt_cnt<*mn { tr.mt_cnt } else { *mn };
-            *mx = if tr.mt_cnt>*mx { tr.mt_cnt } else { *mx };
-        } else {
-            self.tx_pw_no.insert(power , (1,tr.mt_cnt,tr.mt_cnt));
+        if tr.tx_own == "P" {
+            self.tx_p += 1;
         }
+        if tr.tx_own == "C" {
+            self.tx_c += 1;
+        }
+        let power = tr.tx_power as usize;
+        if let Some((cn, mn, mx)) = self.tx_pw_no.get_mut(&power) {
+            *cn += 1;
+            *mn = if tr.mt_cnt < *mn { tr.mt_cnt } else { *mn };
+            *mx = if tr.mt_cnt > *mx { tr.mt_cnt } else { *mx };
+        } else {
+            self.tx_pw_no.insert(power, (1, tr.mt_cnt, tr.mt_cnt));
+        }
+
+        if tr.tx_own == "P" {
+            if let Some((cn, mn, mx)) = self.txp_pw_no.get_mut(&power) {
+                *cn += 1;
+                *mn = if tr.mt_cnt < *mn { tr.mt_cnt } else { *mn };
+                *mx = if tr.mt_cnt > *mx { tr.mt_cnt } else { *mx };
+            } else {
+                self.txp_pw_no.insert(power, (1, tr.mt_cnt, tr.mt_cnt));
+            }
+        }
+
+        if tr.tx_own == "C" {
+            if let Some((cn, mn, mx)) = self.txc_pw_no.get_mut(&power) {
+                *cn += 1;
+                *mn = if tr.mt_cnt < *mn { tr.mt_cnt } else { *mn };
+                *mx = if tr.mt_cnt > *mx { tr.mt_cnt } else { *mx };
+            } else {
+                self.txc_pw_no.insert(power, (1, tr.mt_cnt, tr.mt_cnt));
+            }
+        }
+
         let mn = tr.mt_cnt;
-        self.tx_mt_min = if mn<self.tx_mt_min { mn } else { self.tx_mt_min };
+        self.tx_mt_min = if mn < self.tx_mt_min {
+            mn
+        } else {
+            self.tx_mt_min
+        };
         let mx = tr.mt_cnt;
-        self.tx_mt_max = if mx>self.tx_mt_max { mx } else { self.tx_mt_max };
+        self.tx_mt_max = if mx > self.tx_mt_max {
+            mx
+        } else {
+            self.tx_mt_max
+        };
         self.mt_ph_a += tr.mt_ph_a;
         self.mt_ph_b += tr.mt_ph_b;
         self.mt_ph_c += tr.mt_ph_c;
@@ -575,27 +621,49 @@ impl TransEnergy {
 
 // find transformer energy on each feeder
 pub async fn prc32() -> Result<(), Box<dyn std::error::Error>> {
-
     let prvs = ld_p3_prvs();
     let prv_sub = ld_p3_prv_sub();
     let sub_inf = ld_p3_sub_inf();
     let prv_calc = ld_p3_calc("p3_prv_calc.bin");
     let fd_trs = ld_fd_trs();
-    println!("prvs {} prv_sub:{} sub_inf:{} prv_calc:{} fd_trs:{}", prvs.len(), prv_sub.len(), sub_inf.len(), prv_calc.len(), fd_trs.len());
+    println!(
+        "prvs {} prv_sub:{} sub_inf:{} prv_calc:{} fd_trs:{}",
+        prvs.len(),
+        prv_sub.len(),
+        sub_inf.len(),
+        prv_calc.len(),
+        fd_trs.len()
+    );
 
-    let mut pv_treg_m = HashMap::<String,TransEnergy>::new();
-    let mut sb_treg_m = HashMap::<String,TransEnergy>::new();
-    let mut fd_treg_m = HashMap::<String,TransEnergy>::new();
-    for pv in prvs { // for pv
+    let mut pv_treg_m = HashMap::<String, TransEnergy>::new();
+    let mut sb_treg_m = HashMap::<String, TransEnergy>::new();
+    let mut fd_treg_m = HashMap::<String, TransEnergy>::new();
+    for pv in prvs {
+        // for pv
         println!("pv: {}", pv);
-        let mut pv_treg = TransEnergy { pv_id: pv.clone(), ..Default::default() };
-        if let Some(sbs) = prv_sub.get(pv.as_str()) { // if pvca
-            for sb in sbs { // for sb
-                let mut sb_treg = TransEnergy { pv_id: pv.clone(), sb_id: sb.clone(), ..Default::default() };
-                println!("  sub: {}", sb);
-                if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
-                    for fd in &sbif.feeders { // for feeders
-                        let mut fd_treg = TransEnergy { pv_id: pv.clone(), sb_id: sb.clone(), fd_id: fd.clone(), ..Default::default() };
+        let mut pv_treg = TransEnergy {
+            pv_id: pv.clone(),
+            ..Default::default()
+        };
+        if let Some(sbs) = prv_sub.get(pv.as_str()) {
+            // if pvca
+            for sb in sbs {
+                // for sb
+                let mut sb_treg = TransEnergy {
+                    pv_id: pv.clone(),
+                    sb_id: sb.clone(),
+                    ..Default::default()
+                };
+                if let Some(sbif) = sub_inf.get(sb.as_str()) {
+                    // if sub
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        let mut fd_treg = TransEnergy {
+                            pv_id: pv.clone(),
+                            sb_id: sb.clone(),
+                            fd_id: fd.clone(),
+                            ..Default::default()
+                        };
                         if let Some(trs) = fd_trs.get(fd) {
                             for tr in trs {
                                 fd_treg.add_tr(tr);
@@ -607,27 +675,36 @@ pub async fn prc32() -> Result<(), Box<dyn std::error::Error>> {
                         fd_treg_m.insert(fd.clone(), fd_treg);
                     } // for feeders
                 } // if sub
+                println!("  sub: {} {:?}", sb, sb_treg.txp_pw_no);
                 sb_treg_m.insert(sb.clone(), sb_treg);
             } // for sub
         } // if pv
         pv_treg_m.insert(pv.clone(), pv_treg);
     }
     let file = format!("{}/p3_pv_treg_m.bin", crate::sg::imp::data_dir());
-    if let Ok(ser) = bincode::serialize(&pv_treg_m) { std::fs::write(file, ser).unwrap(); }
+    if let Ok(ser) = bincode::serialize(&pv_treg_m) {
+        std::fs::write(file, ser).unwrap();
+    }
     let file = format!("{}/p3_sb_treg_m.bin", crate::sg::imp::data_dir());
-    if let Ok(ser) = bincode::serialize(&sb_treg_m) { std::fs::write(file, ser).unwrap(); }
+    if let Ok(ser) = bincode::serialize(&sb_treg_m) {
+        std::fs::write(file, ser).unwrap();
+    }
     let file = format!("{}/p3_fd_treg_m.bin", crate::sg::imp::data_dir());
-    if let Ok(ser) = bincode::serialize(&fd_treg_m) { std::fs::write(file, ser).unwrap(); }
+    if let Ok(ser) = bincode::serialize(&fd_treg_m) {
+        std::fs::write(file, ser).unwrap();
+    }
     Ok(())
 }
 
-pub fn ld_p3_treg_m(fnm: &str) -> HashMap::<String,TransEnergy> {
+pub fn ld_p3_treg_m(fnm: &str) -> HashMap<String, TransEnergy> {
     if let Ok(f) = File::open(crate::sg::ldp::res(fnm)) {
-        if let Ok(dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String,TransEnergy>>(BufReader::new(f)) {
+        if let Ok(dt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, TransEnergy>>(
+            BufReader::new(f),
+        ) {
             return dt;
         }
     }
-    HashMap::<String,TransEnergy>::new()
+    HashMap::<String, TransEnergy>::new()
 }
 
 // find transformer energy on each feeder
@@ -637,11 +714,14 @@ pub async fn prc33() -> Result<(), Box<dyn std::error::Error>> {
     let mut txno = 0;
     let mut mt1 = 0;
     let mut mt3 = 0;
-    for (k,t) in treg_m {
+    for (k, t) in treg_m {
         txno += t.tx_no;
         mt1 += t.mt_1_ph;
         mt3 += t.mt_3_ph;
-        println!("{} {} =({} {})  m1:{} m3:{}", k, t.tx_no, t.tx_p, t.tx_c, t.mt_1_ph, t.mt_3_ph);
+        println!(
+            "{} {} =({} {})  m1:{} m3:{}",
+            k, t.tx_no, t.tx_p, t.tx_c, t.mt_1_ph, t.mt_3_ph
+        );
     }
     println!("tx: {} {} {}", txno, mt1, mt3);
     Ok(())
@@ -649,7 +729,6 @@ pub async fn prc33() -> Result<(), Box<dyn std::error::Error>> {
 
 // find transformer energy on each feeder
 pub async fn prc34() -> Result<(), Box<dyn std::error::Error>> {
-
     /*
     let pv_calc = ld_p3_calc("p3_prv_calc.bin");
     for (pv, ca) in pv_calc {
@@ -666,7 +745,7 @@ pub async fn prc34() -> Result<(), Box<dyn std::error::Error>> {
     }
     */
 
-    let mut pv_calc = ld_p3_calc("p3_sub_calc.bin");
+    let /*mut*/ _pv_calc = ld_p3_calc("p3_sub_calc.bin");
 
     /*
     for (pv, mut ca) in pv_calc {
@@ -674,27 +753,34 @@ pub async fn prc34() -> Result<(), Box<dyn std::error::Error>> {
         if ca.year_load.loads[100].load.len()<48 { continue; }
         //ca.year_load.power(4f32);
         year_load_power(&mut ca.year_load);
-        println!("{} - {} {} - {} {}", pv, 
+        println!("{} - {} {} - {} {}", pv,
             ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.neg_peak,
             ca.year_load.power_quality.pos_avg, ca.year_load.power_quality.neg_avg,
         );
-        
+
     }
     */
 
     let pv_calc = ld_p3_calc("p3_feed_calc.bin");
     println!("FEEDER");
     for (pv, mut ca) in pv_calc {
-        if ca.year_load.loads.len()<365 { continue; }
-        if ca.year_load.loads[100].load.len()<48 { continue; }
+        if ca.year_load.loads.len() < 365 {
+            continue;
+        }
+        if ca.year_load.loads[100].load.len() < 48 {
+            continue;
+        }
         year_load_power(&mut ca.year_load);
-        println!("{} - {} {} - {} {}", pv, 
-            ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.neg_peak,
-            ca.year_load.power_quality.pos_avg, ca.year_load.power_quality.neg_avg,
+        println!(
+            "{} - {} {} - {} {}",
+            pv,
+            ca.year_load.power_quality.pos_peak,
+            ca.year_load.power_quality.neg_peak,
+            ca.year_load.power_quality.pos_avg,
+            ca.year_load.power_quality.neg_avg,
         );
     }
 
-    
     Ok(())
 }
 
@@ -795,8 +881,8 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
 
     // SPP
     let sppv = p1_spp_conn();
-    let mut spp_sb_m1 = HashMap::<String,Vec::<SPPConn>>::new();
-    let mut spp_sb_m2 = HashMap::<String,Vec::<SPPConn>>::new();
+    let mut spp_sb_m1 = HashMap::<String, Vec<SPPConn>>::new();
+    let mut spp_sb_m2 = HashMap::<String, Vec<SPPConn>>::new();
     for spp in &sppv {
         if let Some(sppv) = spp_sb_m1.get_mut(&spp.sbid) {
             sppv.push(spp.clone());
@@ -812,7 +898,7 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
 
     // VSPP
     let vsppv = p1_vspp_conn();
-    let mut vspp_sb_m = HashMap::<String,Vec::<VSPPConn>>::new();
+    let mut vspp_sb_m = HashMap::<String, Vec<VSPPConn>>::new();
     for vspp in &vsppv {
         if let Some(vsppv) = vspp_sb_m.get_mut(&vspp.sbid) {
             vsppv.push(vspp.clone());
@@ -823,9 +909,9 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
 
     // RE Plan
     let newre = ld_replan();
-    let mut re_sb_m = HashMap::<String,Vec::<REPlan>>::new();
+    let mut re_sb_m = HashMap::<String, Vec<REPlan>>::new();
     for rep in &newre {
-        if let Some(mut rev) = re_sb_m.get_mut(&rep.sbid) {
+        if let Some(/*mut*/ rev) = re_sb_m.get_mut(&rep.sbid) {
             rev.push(rep.clone());
         } else {
             re_sb_m.insert(rep.sbid.clone(), vec![rep.clone()]);
@@ -838,44 +924,84 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
     use std::fmt::Write;
     let mut pv_req = String::new();
     let mut sb_req = String::new();
-    let mut fd_req = String::new();
-    let mut pv35 = String::new();
-    write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
-        "sb", "name", "pv", "pos_peak", "pos_avg", "pos_ngy", "neg_peak", "neg_avg", "neg_cnt", "neg_ngy",
-         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT","E5:GWh","E2:GWh");
-    for pv in prvs { // for pv
-        let (mut pv1, mut pv2) = (String::new(),String::new());
-        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) = (0f32,0f32,0f32,0f32,0i32,0usize);
+    //let mut fd_req = String::new();
+    //let mut pv35 = String::new();
+    let /*mut*/ _fd_req = String::new();
+    let /*mut*/ _pv35 = String::new();
+    write!(
+        sb_req,
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+        "sb",
+        "name",
+        "pv",
+        "pos_peak",
+        "pos_avg",
+        "pos_ngy",
+        "neg_peak",
+        "neg_avg",
+        "neg_cnt",
+        "neg_ngy",
+        "mwh ",
+        "mw1",
+        "max pw",
+        "trxno",
+        "lat+long",
+        "DT",
+        "MT",
+        "E5:GWh",
+        "E2:GWh"
+    )
+    .unwrap();
+    for pv in prvs {
+        // for pv
+        let (mut pv1, mut pv2) = (String::new(), String::new());
+        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) =
+            (0f32, 0f32, 0f32, 0f32, 0i32, 0usize);
         let mut spp_cn = 0;
         let mut vspp_cn = 0;
         let mut rep_cn = 0;
-        let mut rep_pw = 0;
+        let /*mut*/ _rep_pw = 0;
         let mut pv_es = 0f32;
-        if let (Some(sbs)) = (prv_sub.get(pv)) { // if pvca
-            for sb in sbs { // for sb
+        if let Some(sbs) = prv_sub.get(pv) {
+            // if pvca
+            for sb in sbs {
+                // for sb
                 //println!("  sb: {} >>>>>", sb);
-                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) = (0f32,0f32,0f32,0f32);
-                let (mut ssmw, mut sstr) = (0i32,0usize);
+                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) =
+                    (0f32, 0f32, 0f32, 0f32);
+                //let (mut ssmw, mut sstr) = (0i32,0usize);
                 let (mut neg_cnt, mut pos_engy, mut neg_engy) = (0usize, 0f32, 0f32);
-                let (mut ss1, mut ss2) = (String::new(),String::new());
+                let (mut ss1, mut ss2) = (String::new(), String::new());
                 let mut sb_es = 0f32;
-                if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
+                if let Some(sbif) = sub_inf.get(sb.as_str()) {
+                    // if sub
                     //sbif.a();
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(mut ca) = pv_calc.get_mut(fd) {
-                            if ca.year_load.loads.len()<365 { continue; }
-                            if ca.year_load.loads[100].load.len()<48 { continue; }
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        if let Some(/*mut*/ ca) = pv_calc.get_mut(fd) {
+                            if ca.year_load.loads.len() < 365 {
+                                continue;
+                            }
+                            if ca.year_load.loads[100].load.len() < 48 {
+                                continue;
+                            }
                             let mut fd_es = 0f32;
                             if let Some(es) = fd_es_m.get(fd) {
                                 fd_es = *es;
                             }
                             year_load_power(&mut ca.year_load);
                             year_load_power(&mut ca.last_year_load);
-                            write!(ss2, "===|===|{}|{}|{}|{}|{}\t{}\n", fd, 
-                                ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.pos_avg,
-                                ca.year_load.power_quality.neg_peak, ca.year_load.power_quality.neg_avg,
+                            write!(
+                                ss2,
+                                "===|===|{}|{}|{}|{}|{}\t{}\n",
+                                fd,
+                                ca.year_load.power_quality.pos_peak,
+                                ca.year_load.power_quality.pos_avg,
+                                ca.year_load.power_quality.neg_peak,
+                                ca.year_load.power_quality.neg_avg,
                                 fd_es,
-                            );
+                            )
+                            .unwrap();
                             pos_peak += ca.year_load.power_quality.pos_peak;
                             pos_avg += ca.year_load.power_quality.pos_avg;
                             neg_peak += ca.year_load.power_quality.neg_peak;
@@ -900,39 +1026,62 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
                     if let Some(repv) = re_sb_m.get(sb) {
                         rep_cn += repv.len();
                     }
-                    let (mut x, mut y) = (0f64,0f64);
+                    let (mut x, mut y) = (0f64, 0f64);
                     let mut ldln = String::new();
-                    if let Some((a,b)) = sb_loc_m.get(sb) {
+                    if let Some((a, b)) = sb_loc_m.get(sb) {
                         x = *a;
                         y = *b;
                         let (xx, yy) = utm_latlong(x as f32, y as f32);
                         ldln = format!("{:.4},{:.4}", xx, yy);
                     }
                     let sb_es0 = (sb_es + 0.5) as i32;
-                    let mut sb_es0 = sb_es0 as f32;
-                    let mut sb_pw0 = sb_es0 * 0.5;
-                    write!(ss1, "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n", sb, sbif.name, pv, pos_peak, pos_avg, neg_peak, neg_avg, neg_cnt, sbif.mvxn, sbif.trxn, x, y, sb_es);
-                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) = (0usize,0usize,0f64,0f64);
+                    let /*mut*/ sb_es0 = sb_es0 as f32;
+                    let /*mut*/ _sb_pw0 = sb_es0 * 0.5;
+                    write!(
+                        ss1,
+                        "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                        sb,
+                        sbif.name,
+                        pv,
+                        pos_peak,
+                        pos_avg,
+                        neg_peak,
+                        neg_avg,
+                        neg_cnt,
+                        sbif.mvxn,
+                        sbif.trxn,
+                        x,
+                        y,
+                        sb_es
+                    )
+                    .unwrap();
+                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) =
+                        (0usize, 0usize, 0f64, 0f64);
                     if let Some(treg) = treg_sb_m.get(sb) {
                         sb_tx_no = treg.tx_no;
                         sb_mt_cnt = treg.mt_cnt;
-                        sb_eg5_sm = treg.eg5_sm/1000000.0;
-                        sb_eg2_sm = treg.eg2_sm/1000000.0;
+                        sb_eg5_sm = treg.eg5_sm / 1000000.0;
+                        sb_eg2_sm = treg.eg2_sm / 1000000.0;
                     }
-                    if pos_peak>1.0 {
+                    if pos_peak > 1.0 {
                         let mut mwh = pos_engy / 365.0 / 25.0;
-                        if mwh>8.0 { mwh = 8.0; }
-                        let mut mw1 = (neg_peak+neg_avg)*0.5;
-                        let mw2 = neg_avg * 1.5;
-                        if mw1>mw2 { mw1 = mw2; }
+                        if mwh > 8.0 {
+                            mwh = 8.0;
+                        }
+                        //let mut mw1 = (neg_peak+neg_avg)*0.5;
+                        let _mw2 = neg_avg * 1.5;
+                        //if mw1>mw2 { mw1 = mw2; }
                         mwh = mwh.ceil();
-                        if neg_cnt<200 { mw1 = 0.0; mwh = 0.0; };
-                        mw1 = mwh * 0.5;
-                        if mwh>0.0 {
-                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
+                        if neg_cnt < 200 {
+                            /*mw1 = 0.0; */
+                            mwh = 0.0;
+                        };
+                        let mw1 = mwh * 0.5;
+                        if mwh > 0.0 {
+                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
                             sb, sbif.name, pv, pos_peak, pos_avg, pos_engy, neg_peak, neg_avg, neg_cnt, neg_engy,
-                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln, 
-                            sb_tx_no, sb_mt_cnt, sb_eg5_sm.ceil(), sb_eg2_sm.ceil());
+                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln,
+                            sb_tx_no, sb_mt_cnt, sb_eg5_sm.ceil(), sb_eg2_sm.ceil()).unwrap();
                         }
                     }
                     pv_pos_peak += pos_peak;
@@ -940,136 +1089,101 @@ pub async fn prc35() -> Result<(), Box<dyn std::error::Error>> {
                     pv_neg_peak += neg_peak;
                     pv_neg_avg += neg_avg;
                     pv_es += sb_es;
-                    ssmw = sbif.mvxn;
-                    sstr = sbif.trxn;
+                    let ssmw = sbif.mvxn;
+                    let sstr = sbif.trxn;
                     pvmw += ssmw;
                     pvtr += sstr;
-
                 }
-                if ss2.len()>2 {
-                    write!(pv2,"{}", ss1);
+                if ss2.len() > 2 {
+                    write!(pv2, "{}", ss1).unwrap();
                     //write!(pv2,"{}", ss2);
                 }
             }
-            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize,0usize,0f64,0f64);
+            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize, 0usize, 0f64, 0f64);
             if let Some(treg) = treg_m.get(pv) {
                 tx_no = treg.tx_no;
                 mt_cnt = treg.mt_cnt;
-                eg5_sm = treg.eg5_sm/1000000.0;
-                eg2_sm = treg.eg2_sm/1000000.0;
+                eg5_sm = treg.eg5_sm / 1000000.0;
+                eg2_sm = treg.eg2_sm / 1000000.0;
             }
-            write!(pv_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv_req,
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
             //write!(pv_req, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
             //    , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
-            write!(pv1, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
-                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv1,
+                "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
         }
         print!("{}", pv1);
 
         print!("{}", pv2);
     }
-    if let Ok(_) = fs::write("prj1/p35_pv_req.txt", pv_req) { }
-    if let Ok(_) = fs::write("prj1/p35_sb_req.txt", sb_req) { 
+    if let Ok(_) = fs::write("prj1/p35_pv_req.txt", pv_req) {}
+    if let Ok(_) = fs::write("prj1/p35_sb_req.txt", sb_req) {
         println!("WRITE FILE P35_SB");
     }
     Ok(())
 }
 
-fn round(dt: f32, no: i32) {
-    let mut dtt = dt;
-    for i in 0..no {
-
-    }
-}
-/*
-// find transformer energy on each feeder
-pub async fn prc36() -> Result<(), Box<dyn std::error::Error>> {
-    //let prvs = ld_p3_prvs();
-    let prvs = grp1();
-    let prv_sub = ld_p3_prv_sub();
-    let sub_inf = ld_p3_sub_inf();
-    let mut pv_calc = ld_p3_calc("p3_feed_calc.bin");
-    let treg_m = ld_p3_treg_m("p3_pv_treg_m.bin");
-    let sppv = p1_spp_conn();
-    let mut spp_m = HashMap::<String,SPPConn>::new();
-    for spp in &sppv {
-        spp_m.insert(spp.sbid.to_string(), spp.clone());
-    }
-
-    use std::fmt::Write;
-    for pv in prvs { // for pv
-        let (mut pv1, mut pv2) = (String::new(),String::new());
-        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) = (0f32,0f32,0f32,0f32,0i32,0usize);
-        if let (Some(sbs),Some(treg)) = (prv_sub.get(pv),treg_m.get(pv)) { // if pvca
-            for sb in sbs { // for sb
-                //println!("  sb: {} >>>>>", sb);
-                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg, mut ssmw, mut sstr) = (0f32,0f32,0f32,0f32,0i32,0usize);
-                let (mut ss1, mut ss2) = (String::new(),String::new());
-                if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
-                    //sbif.a();
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(mut ca) = pv_calc.get_mut(fd) {
-                            if ca.year_load.loads.len()<365 { continue; }
-                            if ca.year_load.loads[100].load.len()<48 { continue; }
-                            year_load_power(&mut ca.year_load);
-                            year_load_power(&mut ca.last_year_load);
-                            write!(ss2, "    {} - POS:[{} {}] NEG[{} {}]\n", fd, 
-                                ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.pos_avg,
-                                ca.year_load.power_quality.neg_peak, ca.year_load.power_quality.neg_avg,
-                            );
-                            pos_peak += ca.year_load.power_quality.pos_peak;
-                            pos_avg += ca.year_load.power_quality.pos_avg;
-                            neg_peak += ca.year_load.power_quality.neg_peak;
-                            neg_avg += ca.year_load.power_quality.neg_avg;
-                        }
-                    }
-                    //write!(ss1, "  {}[{}]  POS:[{} {}] NEG[{} {}] mw:{} tx:{}\n", sbif.name, pv, pos_peak, pos_avg, neg_peak, neg_avg, sbif.mvxn, sbif.trxn);
-                    pv_pos_peak += pos_peak;
-                    pv_pos_avg += pos_avg;
-                    pv_neg_peak += neg_peak;
-                    pv_neg_avg += neg_avg;
-                    ssmw = sbif.mvxn;
-                    sstr = sbif.trxn;
-                    pvmw += ssmw;
-                    pvtr += sstr;
-                }
-                if ss2.len()>2 {
-                    write!(pv2,"{}", ss1);
-                    //write!(pv2,"{}", ss2);
-                }
-            }
-            write!(pv1, "{} POS:[{} {}] NEG[{} {}] mw:{} tx:{} dtx:{} mt:{} e5:{} e2:{}\n"
-                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, treg.tx_no, treg.mt_cnt, treg.eg5_sm, treg.eg2_sm);
-        }
-        print!("{}", pv1);
-        print!("{}", pv2);
-    }
-    Ok(())
-}
-*/
-
 // find substation location with MV breaker and HV power transformer
 pub async fn prc37() -> Result<(), Box<dyn std::error::Error>> {
-    let ly = "DS_Switch";
+    let _ly = "DS_Switch";
     let ly = "DS_CircuitBreaker";
-    let ht = "DS_HVTransformer";
+    let _ht = "DS_HVTransformer";
     let dr = "../sgdata/db1";
 
     let pat1 = Regex::new(r"...[0-1][0-9][VW]B-01").unwrap();
-    let pat2 = Regex::new(r"[A-Z][A-Z][A-Z].*").unwrap();
+    let _pat2 = Regex::new(r"[A-Z][A-Z][A-Z].*").unwrap();
 
-    let mut dbv = Vec::<HashMap<String,DbfVal>>::new();
-    let mut pnv = Vec::<(f64,f64)>::new();
-    let mut db_ht_v = Vec::<HashMap<String,DbfVal>>::new();
-    let mut pn_ht_v = Vec::<(f64,f64)>::new();
+    let mut dbv = Vec::<HashMap<String, DbfVal>>::new();
+    let mut pnv = Vec::<(f64, f64)>::new();
+    let /*mut*/ _db_ht_v = Vec::<HashMap<String,DbfVal>>::new();
+    let /*mut*/ _pn_ht_v = Vec::<(f64,f64)>::new();
     for ar in ar_list() {
         let dbw = format!("{}/{}_{}.db", dr, ar, ly);
         let pnw = format!("{}/{}_{}.pn", dr, ar, ly);
-        if let (Ok(fdb),Ok(fpn)) = (File::open(dbw), File::open(pnw)) {
+        if let (Ok(fdb), Ok(fpn)) = (File::open(dbw), File::open(pnw)) {
             if let (Ok(mut db), Ok(mut pn)) = (
-                bincode::deserialize_from::<BufReader<File>, Vec::<HashMap<String,DbfVal>>>(BufReader::new(fdb)),
-                bincode::deserialize_from::<BufReader<File>, Vec::<(f64,f64)>>(BufReader::new(fpn)),
-             ) {
+                bincode::deserialize_from::<BufReader<File>, Vec<HashMap<String, DbfVal>>>(
+                    BufReader::new(fdb),
+                ),
+                bincode::deserialize_from::<BufReader<File>, Vec<(f64, f64)>>(BufReader::new(fpn)),
+            ) {
                 dbv.append(&mut db);
                 pnv.append(&mut pn);
             }
@@ -1088,7 +1202,7 @@ pub async fn prc37() -> Result<(), Box<dyn std::error::Error>> {
         }
         */
     }
-    let mut sbpn_m = HashMap::<String,(f64,f64)>::new();
+    let mut sbpn_m = HashMap::<String, (f64, f64)>::new();
     println!("all {} = {}", pnv.len(), dbv.len());
     let mut cn = 0;
     for i in 0..dbv.len() {
@@ -1098,7 +1212,7 @@ pub async fn prc37() -> Result<(), Box<dyn std::error::Error>> {
             if let DbfVal::Character(Some(tx)) = fid {
                 if pat1.is_match(&tx) {
                     let sbid = &tx[0..3];
-                    if let Some(pn) = sbpn_m.get(sbid) {
+                    if let Some(_pn) = sbpn_m.get(sbid) {
                     } else {
                         cn += 1;
                         sbpn_m.insert(sbid.to_string(), (pn.0, pn.1));
@@ -1110,7 +1224,9 @@ pub async fn prc37() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let file = format!("{}/p3_sub_loc.bin", crate::sg::imp::data_dir());
-    if let Ok(ser) = bincode::serialize(&sbpn_m) { std::fs::write(file, ser).unwrap(); }
+    if let Ok(ser) = bincode::serialize(&sbpn_m) {
+        std::fs::write(file, ser).unwrap();
+    }
 
     let sblo = ld_sub_loc();
     println!("sub loc {}", sblo.len());
@@ -1139,29 +1255,31 @@ pub async fn prc37() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn ld_sub_loc() -> HashMap::<String,(f64,f64)> {
+pub fn ld_sub_loc() -> HashMap<String, (f64, f64)> {
     if let Ok(f) = File::open(crate::sg::ldp::res("p3_sub_loc.bin")) {
-        if let Ok(mut dt)=bincode::deserialize_from::<BufReader<File>, HashMap::<String,(f64,f64)>>(BufReader::new(f)) {
+        if let Ok(mut dt) = bincode::deserialize_from::<BufReader<File>, HashMap<String, (f64, f64)>>(
+            BufReader::new(f),
+        ) {
             let adj_sub = [
-            ("KWB",(13.7584, 100.9922)),
-            ("EKB",(13.5564, 100.2863)),
-            ("KBK",(14.0598, 101.8403)),
-            ("DOP",(14.6566,100.5947)),
-            ("WAM",(14.8072, 101.1191)),
-            ("BPB",(13.8533, 99.8709)),
-            ("CBN",(13.6153, 99.6413)),
-            ("NOM",(13.7948, 99.7668)),
-            ("CHA",(16.5615, 102.0636)),
-            ("ROA",(7.8162, 100.3566)),
-            ("LAA",(15.7663, 99.8683)),
-            ("HTA",(14.9223, 102.1719)),
-            ("PSA",(13.4948, 101.1638)),
-            ("BSH", (15.8127, 101.0075)),
-            ("MRA", (15.3011, 100.1042)),
-            ("BAM", (14.3371, 100.1979)),
-            ("SSA", (13.4444, 100.0621)),
+                ("KWB", (13.7584, 100.9922)),
+                ("EKB", (13.5564, 100.2863)),
+                ("KBK", (14.0598, 101.8403)),
+                ("DOP", (14.6566, 100.5947)),
+                ("WAM", (14.8072, 101.1191)),
+                ("BPB", (13.8533, 99.8709)),
+                ("CBN", (13.6153, 99.6413)),
+                ("NOM", (13.7948, 99.7668)),
+                ("CHA", (16.5615, 102.0636)),
+                ("ROA", (7.8162, 100.3566)),
+                ("LAA", (15.7663, 99.8683)),
+                ("HTA", (14.9223, 102.1719)),
+                ("PSA", (13.4948, 101.1638)),
+                ("BSH", (15.8127, 101.0075)),
+                ("MRA", (15.3011, 100.1042)),
+                ("BAM", (14.3371, 100.1979)),
+                ("SSA", (13.4444, 100.0621)),
             ];
-            for (sb,(x,y)) in adj_sub {
+            for (sb, (x, y)) in adj_sub {
                 //let (xx, yy) = utm_latlong(x as f32, y as f32);
                 let (xx, yy) = latlong_utm(x as f32, y as f32);
                 dt.insert(sb.to_string(), (xx.into(), yy.into()));
@@ -1169,15 +1287,8 @@ pub fn ld_sub_loc() -> HashMap::<String,(f64,f64)> {
             return dt;
         }
     }
-    HashMap::<String,(f64,f64)>::new()
+    HashMap::<String, (f64, f64)>::new()
 }
-
-/*
-let pnw = format!("{}/{}_{}.pn", wdir, r, pn);
-if let Ok(ser) = bincode::serialize(&vpn) {
-    std::fs::write(pnw, ser).unwrap();
-}
-*/
 
 // find transformer energy on each feeder
 pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
@@ -1192,8 +1303,8 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
 
     // SPP
     let sppv = p1_spp_conn();
-    let mut spp_sb_m1 = HashMap::<String,Vec::<SPPConn>>::new();
-    let mut spp_sb_m2 = HashMap::<String,Vec::<SPPConn>>::new();
+    let mut spp_sb_m1 = HashMap::<String, Vec<SPPConn>>::new();
+    let mut spp_sb_m2 = HashMap::<String, Vec<SPPConn>>::new();
     for spp in &sppv {
         if let Some(sppv) = spp_sb_m1.get_mut(&spp.sbid) {
             sppv.push(spp.clone());
@@ -1209,7 +1320,7 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
 
     // VSPP
     let vsppv = p1_vspp_conn();
-    let mut vspp_sb_m = HashMap::<String,Vec::<VSPPConn>>::new();
+    let mut vspp_sb_m = HashMap::<String, Vec<VSPPConn>>::new();
     for vspp in &vsppv {
         if let Some(vsppv) = vspp_sb_m.get_mut(&vspp.sbid) {
             vsppv.push(vspp.clone());
@@ -1220,9 +1331,9 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
 
     // RE Plan
     let newre = ld_replan();
-    let mut re_sb_m = HashMap::<String,Vec::<REPlan>>::new();
+    let mut re_sb_m = HashMap::<String, Vec<REPlan>>::new();
     for rep in &newre {
-        if let Some(mut rev) = re_sb_m.get_mut(&rep.sbid) {
+        if let Some(/*mut*/ rev) = re_sb_m.get_mut(&rep.sbid) {
             rev.push(rep.clone());
         } else {
             re_sb_m.insert(rep.sbid.clone(), vec![rep.clone()]);
@@ -1235,44 +1346,87 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
     use std::fmt::Write;
     let mut pv_req = String::new();
     let mut sb_req = String::new();
-    let mut fd_req = String::new();
-    let mut pv35 = String::new();
-    write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
-        "sb", "name", "pv", "pos_peak", "pos_avg", "pos_ngy", "neg_peak", "neg_avg", "neg_cnt", "neg_ngy",
-         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL");
-    for pv in prvs { // for pv
-        let (mut pv1, mut pv2) = (String::new(),String::new());
-        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) = (0f32,0f32,0f32,0f32,0i32,0usize);
+    //let mut fd_req = String::new();
+    //let mut pv35 = String::new();
+    let /*mut*/ _fd_req = String::new();
+    let /*mut*/ _pv35 = String::new();
+    write!(
+        sb_req,
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+        "sb",
+        "name",
+        "pv",
+        "pos_peak",
+        "pos_avg",
+        "pos_ngy",
+        "neg_peak",
+        "neg_avg",
+        "neg_cnt",
+        "neg_ngy",
+        "mwh ",
+        "mw1",
+        "max pw",
+        "trxno",
+        "lat+long",
+        "DT",
+        "MT",
+        "E5:GWh",
+        "E2:GWh",
+        "SPP",
+        "VSPP",
+        "REPL"
+    )
+    .unwrap();
+    for pv in prvs {
+        // for pv
+        let (mut pv1, mut pv2) = (String::new(), String::new());
+        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) =
+            (0f32, 0f32, 0f32, 0f32, 0i32, 0usize);
         let mut spp_cn = 0;
         let mut vspp_cn = 0;
         let mut rep_cn = 0;
-        let mut rep_pw = 0;
+        let /*mut*/ _rep_pw = 0;
         let mut pv_es = 0f32;
-        if let (Some(sbs)) = (prv_sub.get(pv)) { // if pvca
-            for sb in sbs { // for sb
+        if let Some(sbs) = prv_sub.get(pv) {
+            // if pvca
+            for sb in sbs {
+                // for sb
                 //println!("  sb: {} >>>>>", sb);
-                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) = (0f32,0f32,0f32,0f32);
-                let (mut ssmw, mut sstr) = (0i32,0usize);
+                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) =
+                    (0f32, 0f32, 0f32, 0f32);
+                //let (mut ssmw, mut sstr) = (0i32,0usize);
                 let (mut neg_cnt, mut pos_engy, mut neg_engy) = (0usize, 0f32, 0f32);
-                let (mut ss1, mut ss2) = (String::new(),String::new());
+                let (mut ss1, mut ss2) = (String::new(), String::new());
                 let mut sb_es = 0f32;
-                if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
+                if let Some(sbif) = sub_inf.get(sb.as_str()) {
+                    // if sub
                     //sbif.a();
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(mut ca) = pv_calc.get_mut(fd) {
-                            if ca.year_load.loads.len()<365 { continue; }
-                            if ca.year_load.loads[100].load.len()<48 { continue; }
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        if let Some(/*mut*/ ca) = pv_calc.get_mut(fd) {
+                            if ca.year_load.loads.len() < 365 {
+                                continue;
+                            }
+                            if ca.year_load.loads[100].load.len() < 48 {
+                                continue;
+                            }
                             let mut fd_es = 0f32;
                             if let Some(es) = fd_es_m.get(fd) {
                                 fd_es = *es;
                             }
                             year_load_power(&mut ca.year_load);
                             year_load_power(&mut ca.last_year_load);
-                            write!(ss2, "===|===|{}|{}|{}|{}|{}\t{}\n", fd, 
-                                ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.pos_avg,
-                                ca.year_load.power_quality.neg_peak, ca.year_load.power_quality.neg_avg,
+                            write!(
+                                ss2,
+                                "===|===|{}|{}|{}|{}|{}\t{}\n",
+                                fd,
+                                ca.year_load.power_quality.pos_peak,
+                                ca.year_load.power_quality.pos_avg,
+                                ca.year_load.power_quality.neg_peak,
+                                ca.year_load.power_quality.neg_avg,
                                 fd_es,
-                            );
+                            )
+                            .unwrap();
                             pos_peak += ca.year_load.power_quality.pos_peak;
                             pos_avg += ca.year_load.power_quality.pos_avg;
                             neg_peak += ca.year_load.power_quality.neg_peak;
@@ -1297,38 +1451,60 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
                     if let Some(repv) = re_sb_m.get(sb) {
                         rep_cn += repv.len();
                     }
-                    let (mut x, mut y) = (0f64,0f64);
+                    let (mut x, mut y) = (0f64, 0f64);
                     let mut ldln = String::new();
-                    if let Some((a,b)) = sb_loc_m.get(sb) {
+                    if let Some((a, b)) = sb_loc_m.get(sb) {
                         x = *a;
                         y = *b;
                         let (xx, yy) = utm_latlong(x as f32, y as f32);
                         ldln = format!("{:.4},{:.4}", xx, yy);
                     }
-                    if ldln.len()==0 { continue; }
+                    if ldln.len() == 0 {
+                        continue;
+                    }
                     ldln = format!("https://maps.google.com/?q={}", ldln);
                     let sb_es0 = (sb_es + 0.5) as i32;
-                    let mut sb_es0 = sb_es0 as f32;
-                    let mut sb_pw0 = sb_es0 * 0.5;
-                    write!(ss1, "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n", sb, sbif.name, pv, pos_peak, pos_avg, neg_peak,
-                        neg_avg, neg_cnt, sbif.mvxn, sbif.trxn, x, y, sb_es);
-                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) = (0usize,0usize,0f64,0f64);
+                    let /*mut*/ sb_es0 = sb_es0 as f32;
+                    let /*mut*/ _sb_pw0 = sb_es0 * 0.5;
+                    write!(
+                        ss1,
+                        "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                        sb,
+                        sbif.name,
+                        pv,
+                        pos_peak,
+                        pos_avg,
+                        neg_peak,
+                        neg_avg,
+                        neg_cnt,
+                        sbif.mvxn,
+                        sbif.trxn,
+                        x,
+                        y,
+                        sb_es
+                    )
+                    .unwrap();
+                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) =
+                        (0usize, 0usize, 0f64, 0f64);
                     if let Some(treg) = treg_sb_m.get(sb) {
                         sb_tx_no = treg.tx_no;
                         sb_mt_cnt = treg.mt_cnt;
-                        sb_eg5_sm = treg.eg5_sm/1000000.0;
-                        sb_eg2_sm = treg.eg2_sm/1000000.0;
+                        sb_eg5_sm = treg.eg5_sm / 1000000.0;
+                        sb_eg2_sm = treg.eg2_sm / 1000000.0;
                     }
-                    if pos_peak>1.0 && neg_cnt>10000 && neg_engy>5000.0 {
+                    if pos_peak > 1.0 && neg_cnt > 10000 && neg_engy > 5000.0 {
                         //let mut mwh = pos_engy / 365.0 / 25.0;
                         let mut mwh = pos_engy / 365.0 / 10.0;
                         //if mwh>8.0 { mwh = 8.0; }
-                        let mut mw1 = (neg_peak+neg_avg)*0.5;
-                        let mw2 = neg_avg * 1.5;
-                        if mw1>mw2 { mw1 = mw2; }
+                        //let mut mw1 = (neg_peak+neg_avg)*0.5;
+                        let _mw2 = neg_avg * 1.5;
+                        //if mw1>mw2 { mw1 = mw2; }
                         mwh = mwh.ceil();
-                        if neg_cnt<200 { mw1 = 0.0; mwh = 0.0; };
-                        mw1 = mwh * 0.5;
+                        if neg_cnt < 200 {
+                            /*mw1 = 0.0;*/
+                            mwh = 0.0;
+                        };
+                        let mw1 = mwh * 0.5;
 
                         // spp count
                         let mut spp = 0;
@@ -1350,14 +1526,14 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
                         if let Some(re) = re_sb_m.get(sb) {
                             repl += re.len();
                         }
-                        
+
                         let mt_tx = sb_mt_cnt as f32 / sb_tx_no as f32;
-                        if mwh>0.0 && mt_tx>10.0 {
-                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
+                        if mwh > 0.0 && mt_tx > 10.0 {
+                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
                             sb, sbif.name, pv, pos_peak, pos_avg, pos_engy, neg_peak, neg_avg, neg_cnt, neg_engy,
-                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln, 
+                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln,
                             sb_tx_no, sb_mt_cnt, sb_eg5_sm.ceil(), sb_eg2_sm.ceil(),
-                            spp, vspp, repl);
+                            spp, vspp, repl).unwrap();
                         }
                     }
                     pv_pos_peak += pos_peak;
@@ -1365,36 +1541,72 @@ pub async fn prc38() -> Result<(), Box<dyn std::error::Error>> {
                     pv_neg_peak += neg_peak;
                     pv_neg_avg += neg_avg;
                     pv_es += sb_es;
-                    ssmw = sbif.mvxn;
-                    sstr = sbif.trxn;
+                    let ssmw = sbif.mvxn;
+                    let sstr = sbif.trxn;
                     pvmw += ssmw;
                     pvtr += sstr;
-
                 }
-                if ss2.len()>2 {
-                    write!(pv2,"{}", ss1);
+                if ss2.len() > 2 {
+                    write!(pv2, "{}", ss1).unwrap();
                     //write!(pv2,"{}", ss2);
                 }
             }
-            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize,0usize,0f64,0f64);
+            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize, 0usize, 0f64, 0f64);
             if let Some(treg) = treg_m.get(pv) {
                 tx_no = treg.tx_no;
                 mt_cnt = treg.mt_cnt;
-                eg5_sm = treg.eg5_sm/1000000.0;
-                eg2_sm = treg.eg2_sm/1000000.0;
+                eg5_sm = treg.eg5_sm / 1000000.0;
+                eg2_sm = treg.eg2_sm / 1000000.0;
             }
-            write!(pv_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv_req,
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
             //write!(pv_req, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
             //    , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
-            write!(pv1, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
-                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv1,
+                "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
         }
         print!("{}", pv1);
 
         print!("{}", pv2);
     }
-    if let Ok(_) = fs::write("prj1/p38_pv_req.txt", pv_req) { }
-    if let Ok(_) = fs::write("prj1/p38_sb_req.txt", sb_req) { 
+    if let Ok(_) = fs::write("prj1/p38_pv_req.txt", pv_req) {}
+    if let Ok(_) = fs::write("prj1/p38_sb_req.txt", sb_req) {
         println!("WRITE FILE P35_SB");
     }
     Ok(())
@@ -1413,8 +1625,8 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
 
     // SPP
     let sppv = p1_spp_conn();
-    let mut spp_sb_m1 = HashMap::<String,Vec::<SPPConn>>::new();
-    let mut spp_sb_m2 = HashMap::<String,Vec::<SPPConn>>::new();
+    let mut spp_sb_m1 = HashMap::<String, Vec<SPPConn>>::new();
+    let mut spp_sb_m2 = HashMap::<String, Vec<SPPConn>>::new();
     for spp in &sppv {
         if let Some(sppv) = spp_sb_m1.get_mut(&spp.sbid) {
             sppv.push(spp.clone());
@@ -1430,7 +1642,7 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
 
     // VSPP
     let vsppv = p1_vspp_conn();
-    let mut vspp_sb_m = HashMap::<String,Vec::<VSPPConn>>::new();
+    let mut vspp_sb_m = HashMap::<String, Vec<VSPPConn>>::new();
     for vspp in &vsppv {
         if let Some(vsppv) = vspp_sb_m.get_mut(&vspp.sbid) {
             vsppv.push(vspp.clone());
@@ -1441,9 +1653,9 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
 
     // RE Plan
     let newre = ld_replan();
-    let mut re_sb_m = HashMap::<String,Vec::<REPlan>>::new();
+    let mut re_sb_m = HashMap::<String, Vec<REPlan>>::new();
     for rep in &newre {
-        if let Some(mut rev) = re_sb_m.get_mut(&rep.sbid) {
+        if let Some(/*mut*/ rev) = re_sb_m.get_mut(&rep.sbid) {
             rev.push(rep.clone());
         } else {
             re_sb_m.insert(rep.sbid.clone(), vec![rep.clone()]);
@@ -1456,44 +1668,85 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
     use std::fmt::Write;
     let mut pv_req = String::new();
     let mut sb_req = String::new();
-    let mut fd_req = String::new();
-    let mut pv35 = String::new();
-    write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
-        "sb", "name", "pv", "pos_peak", "pos_avg", "pos_ngy", "neg_peak", "neg_avg", "neg_cnt", "neg_ngy",
-         "mwh ", "mw1", "max pw", "trxno", "lat+long", "DT","MT","E5:GWh","E2:GWh", "SPP", "VSPP", "REPL");
-    for pv in prvs { // for pv
-        let (mut pv1, mut pv2) = (String::new(),String::new());
-        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) = (0f32,0f32,0f32,0f32,0i32,0usize);
+    let /*mut*/ _fd_req = String::new();
+    let /*mut*/ _pv35 = String::new();
+    write!(
+        sb_req,
+        "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+        "sb",
+        "name",
+        "pv",
+        "pos_peak",
+        "pos_avg",
+        "pos_ngy",
+        "neg_peak",
+        "neg_avg",
+        "neg_cnt",
+        "neg_ngy",
+        "mwh ",
+        "mw1",
+        "max pw",
+        "trxno",
+        "lat+long",
+        "DT",
+        "MT",
+        "E5:GWh",
+        "E2:GWh",
+        "SPP",
+        "VSPP",
+        "REPL"
+    )
+    .unwrap();
+    for pv in prvs {
+        // for pv
+        let (mut pv1, mut pv2) = (String::new(), String::new());
+        let (mut pv_pos_peak, mut pv_pos_avg, mut pv_neg_peak, mut pv_neg_avg, mut pvmw, mut pvtr) =
+            (0f32, 0f32, 0f32, 0f32, 0i32, 0usize);
         let mut spp_cn = 0;
         let mut vspp_cn = 0;
         let mut rep_cn = 0;
-        let mut rep_pw = 0;
+        let /*mut*/ _rep_pw = 0;
         let mut pv_es = 0f32;
-        if let (Some(sbs)) = (prv_sub.get(pv)) { // if pvca
-            for sb in sbs { // for sb
+        if let Some(sbs) = prv_sub.get(pv) {
+            // if pvca
+            for sb in sbs {
+                // for sb
                 //println!("  sb: {} >>>>>", sb);
-                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) = (0f32,0f32,0f32,0f32);
-                let (mut ssmw, mut sstr) = (0i32,0usize);
+                let (mut pos_peak, mut pos_avg, mut neg_peak, mut neg_avg) =
+                    (0f32, 0f32, 0f32, 0f32);
+                //let (mut ssmw, mut sstr) = (0i32,0usize);
                 let (mut neg_cnt, mut pos_engy, mut neg_engy) = (0usize, 0f32, 0f32);
-                let (mut ss1, mut ss2) = (String::new(),String::new());
+                let (mut ss1, mut ss2) = (String::new(), String::new());
                 let mut sb_es = 0f32;
-                if let Some(sbif) = sub_inf.get(sb.as_str()) { // if sub
+                if let Some(sbif) = sub_inf.get(sb.as_str()) {
+                    // if sub
                     //sbif.a();
-                    for fd in &sbif.feeders { // for feeders
-                        if let Some(mut ca) = pv_calc.get_mut(fd) {
-                            if ca.year_load.loads.len()<365 { continue; }
-                            if ca.year_load.loads[100].load.len()<48 { continue; }
+                    for fd in &sbif.feeders {
+                        // for feeders
+                        if let Some(/*mut*/ ca) = pv_calc.get_mut(fd) {
+                            if ca.year_load.loads.len() < 365 {
+                                continue;
+                            }
+                            if ca.year_load.loads[100].load.len() < 48 {
+                                continue;
+                            }
                             let mut fd_es = 0f32;
                             if let Some(es) = fd_es_m.get(fd) {
                                 fd_es = *es;
                             }
                             year_load_power(&mut ca.year_load);
                             year_load_power(&mut ca.last_year_load);
-                            write!(ss2, "===|===|{}|{}|{}|{}|{}\t{}\n", fd, 
-                                ca.year_load.power_quality.pos_peak, ca.year_load.power_quality.pos_avg,
-                                ca.year_load.power_quality.neg_peak, ca.year_load.power_quality.neg_avg,
+                            write!(
+                                ss2,
+                                "===|===|{}|{}|{}|{}|{}\t{}\n",
+                                fd,
+                                ca.year_load.power_quality.pos_peak,
+                                ca.year_load.power_quality.pos_avg,
+                                ca.year_load.power_quality.neg_peak,
+                                ca.year_load.power_quality.neg_avg,
                                 fd_es,
-                            );
+                            )
+                            .unwrap();
                             pos_peak += ca.year_load.power_quality.pos_peak;
                             pos_avg += ca.year_load.power_quality.pos_avg;
                             neg_peak += ca.year_load.power_quality.neg_peak;
@@ -1518,38 +1771,60 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
                     if let Some(repv) = re_sb_m.get(sb) {
                         rep_cn += repv.len();
                     }
-                    let (mut x, mut y) = (0f64,0f64);
+                    let (mut x, mut y) = (0f64, 0f64);
                     let mut ldln = String::new();
-                    if let Some((a,b)) = sb_loc_m.get(sb) {
+                    if let Some((a, b)) = sb_loc_m.get(sb) {
                         x = *a;
                         y = *b;
                         let (xx, yy) = utm_latlong(x as f32, y as f32);
                         ldln = format!("{:.4},{:.4}", xx, yy);
                     }
-                    if ldln.len()==0 { continue; }
+                    if ldln.len() == 0 {
+                        continue;
+                    }
                     ldln = format!("https://maps.google.com/?q={}", ldln);
                     let sb_es0 = (sb_es + 0.5) as i32;
-                    let mut sb_es0 = sb_es0 as f32;
-                    let mut sb_pw0 = sb_es0 * 0.5;
-                    write!(ss1, "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n", sb, sbif.name, pv, pos_peak, pos_avg, neg_peak,
-                        neg_avg, neg_cnt, sbif.mvxn, sbif.trxn, x, y, sb_es);
-                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) = (0usize,0usize,0f64,0f64);
+                    let /*mut*/ sb_es0 = sb_es0 as f32;
+                    let /*mut*/ _sb_pw0 = sb_es0 * 0.5;
+                    write!(
+                        ss1,
+                        "===|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                        sb,
+                        sbif.name,
+                        pv,
+                        pos_peak,
+                        pos_avg,
+                        neg_peak,
+                        neg_avg,
+                        neg_cnt,
+                        sbif.mvxn,
+                        sbif.trxn,
+                        x,
+                        y,
+                        sb_es
+                    )
+                    .unwrap();
+                    let (mut sb_tx_no, mut sb_mt_cnt, mut sb_eg5_sm, mut sb_eg2_sm) =
+                        (0usize, 0usize, 0f64, 0f64);
                     if let Some(treg) = treg_sb_m.get(sb) {
                         sb_tx_no = treg.tx_no;
                         sb_mt_cnt = treg.mt_cnt;
-                        sb_eg5_sm = treg.eg5_sm/1000000.0;
-                        sb_eg2_sm = treg.eg2_sm/1000000.0;
+                        sb_eg5_sm = treg.eg5_sm / 1000000.0;
+                        sb_eg2_sm = treg.eg2_sm / 1000000.0;
                     }
-                    if pos_peak>1.0  {
+                    if pos_peak > 1.0 {
                         //let mut mwh = pos_engy / 365.0 / 25.0;
                         let mut mwh = pos_engy / 365.0 / 10.0;
                         //if mwh>8.0 { mwh = 8.0; }
-                        let mut mw1 = (neg_peak+neg_avg)*0.5;
-                        let mw2 = neg_avg * 1.5;
-                        if mw1>mw2 { mw1 = mw2; }
+                        //let mut mw1 = (neg_peak+neg_avg)*0.5;
+                        let _mw2 = neg_avg * 1.5;
+                        //if mw1>mw2 { mw1 = mw2; }
                         mwh = mwh.ceil();
-                        if neg_cnt<200 { mw1 = 0.0; mwh = 0.0; };
-                        mw1 = mwh * 0.5;
+                        if neg_cnt < 200 {
+                            /*mw1 = 0.0;*/
+                            mwh = 0.0;
+                        };
+                        let mw1 = mwh * 0.5;
 
                         // spp count
                         let mut spp = 0;
@@ -1571,14 +1846,14 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
                         if let Some(re) = re_sb_m.get(sb) {
                             repl += re.len();
                         }
-                        
+
                         let mt_tx = sb_mt_cnt as f32 / sb_tx_no as f32;
-                        if mt_tx>10.0 {
-                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
+                        if mt_tx > 10.0 {
+                            write!(sb_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
                             sb, sbif.name, pv, pos_peak, pos_avg, pos_engy, neg_peak, neg_avg, neg_cnt, neg_engy,
-                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln, 
+                            mwh, mw1, sbif.mvxn, sbif.trxn, ldln,
                             sb_tx_no, sb_mt_cnt, sb_eg5_sm.ceil(), sb_eg2_sm.ceil(),
-                            spp, vspp, repl);
+                            spp, vspp, repl).unwrap();
                         }
                     }
                     pv_pos_peak += pos_peak;
@@ -1586,38 +1861,73 @@ pub async fn prc39() -> Result<(), Box<dyn std::error::Error>> {
                     pv_neg_peak += neg_peak;
                     pv_neg_avg += neg_avg;
                     pv_es += sb_es;
-                    ssmw = sbif.mvxn;
-                    sstr = sbif.trxn;
+                    let ssmw = sbif.mvxn;
+                    let sstr = sbif.trxn;
                     pvmw += ssmw;
                     pvtr += sstr;
-
                 }
-                if ss2.len()>2 {
-                    write!(pv2,"{}", ss1);
+                if ss2.len() > 2 {
+                    write!(pv2, "{}", ss1).unwrap();
                     //write!(pv2,"{}", ss2);
                 }
             }
-            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize,0usize,0f64,0f64);
+            let (mut tx_no, mut mt_cnt, mut eg5_sm, mut eg2_sm) = (0usize, 0usize, 0f64, 0f64);
             if let Some(treg) = treg_m.get(pv) {
                 tx_no = treg.tx_no;
                 mt_cnt = treg.mt_cnt;
-                eg5_sm = treg.eg5_sm/1000000.0;
-                eg2_sm = treg.eg2_sm/1000000.0;
+                eg5_sm = treg.eg5_sm / 1000000.0;
+                eg2_sm = treg.eg2_sm / 1000000.0;
             }
-            write!(pv_req, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv_req,
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
             //write!(pv_req, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
             //    , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
-            write!(pv1, "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n"
-                , pv, pv_pos_peak, pv_pos_avg, pv_neg_peak, pv_neg_avg, pvmw, pvtr, tx_no, mt_cnt, eg5_sm, eg2_sm, spp_cn, vspp_cn, rep_cn, pv_es);
+            write!(
+                pv1,
+                "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                pv,
+                pv_pos_peak,
+                pv_pos_avg,
+                pv_neg_peak,
+                pv_neg_avg,
+                pvmw,
+                pvtr,
+                tx_no,
+                mt_cnt,
+                eg5_sm,
+                eg2_sm,
+                spp_cn,
+                vspp_cn,
+                rep_cn,
+                pv_es
+            )
+            .unwrap();
         }
         print!("{}", pv1);
 
         print!("{}", pv2);
     }
-    if let Ok(_) = fs::write("prj1/p39_pv_req.txt", pv_req) { }
-    if let Ok(_) = fs::write("prj1/p39_sb_req.txt", sb_req) { 
+    if let Ok(_) = fs::write("prj1/p39_pv_req.txt", pv_req) {}
+    if let Ok(_) = fs::write("prj1/p39_sb_req.txt", sb_req) {
         println!("WRITE FILE P35_SB");
     }
     Ok(())
 }
-

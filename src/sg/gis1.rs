@@ -1,11 +1,11 @@
-use crate::sg::mvline::{utm_latlong, latlong_utm};
+//use crate::sg::mvline::{utm_latlong, latlong_utm};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use tis620::decode;
+//use tis620::decode;
 
-use encoding_rs::*;
+//use encoding_rs::*;
 
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -23,9 +23,9 @@ pub enum DbfVal {
     //DateTime(dbase::DateTime),
 }
 
-fn db_rec(rc: dbase::Record) -> HashMap<String,DbfVal> {
+fn db_rec(rc: dbase::Record) -> HashMap<String, DbfVal> {
     let mut rec = HashMap::new();
-    for (nm,va) in rc {
+    for (nm, va) in rc {
         let v = match &va {
             dbase::FieldValue::Character(op) => DbfVal::Character(op.clone()),
             dbase::FieldValue::Numeric(op) => DbfVal::Numeric(op.clone()),
@@ -44,67 +44,96 @@ fn db_rec(rc: dbase::Record) -> HashMap<String,DbfVal> {
 
 pub fn ar_list() -> [&'static str; 12] {
     [
-        "N1", "N2", "N3", "C1", "C2", "C3", 
-        "NE1", "NE2", 
-        "NE3", "S1", "S2", "S3",
+        "N1", "N2", "N3", "C1", "C2", "C3", "NE1", "NE2", "NE3", "S1", "S2", "S3",
     ]
 }
 
+#[allow(dead_code)]
 pub fn gis_line_lays() -> [&'static str; 6] {
     [
-        "DS_BusBar", "DS_EserviceLine", "DS_HVBusBar", "DS_HVConductor", "DS_LVConductor",
+        "DS_BusBar",
+        "DS_EserviceLine",
+        "DS_HVBusBar",
+        "DS_HVConductor",
+        "DS_LVConductor",
         "DS_MVConductor",
     ]
 }
 
+#[allow(dead_code)]
 pub fn gis_pnt_lays() -> [&'static str; 17] {
     [
-        "DS_Capacitor", "DS_CircuitBreaker", "DS_Generator", "DS_HVCircuitbreaker", "DS_HVGenerator", 
-        "DS_HVPrimaryMeter", "DS_HVSwitch", "DS_HVTransformer", "DS_LowVoltageMeter", "DS_LVCapacitor", 
-        "DS_LVGenerator", "DS_PrimaryMeter", "DS_RECLOSER", "DS_Switch", "DS_SwitchingFacility", 
-        "DS_Transformer", "DS_VoltageRegulator", 
+        "DS_Capacitor",
+        "DS_CircuitBreaker",
+        "DS_Generator",
+        "DS_HVCircuitbreaker",
+        "DS_HVGenerator",
+        "DS_HVPrimaryMeter",
+        "DS_HVSwitch",
+        "DS_HVTransformer",
+        "DS_LowVoltageMeter",
+        "DS_LVCapacitor",
+        "DS_LVGenerator",
+        "DS_PrimaryMeter",
+        "DS_RECLOSER",
+        "DS_Switch",
+        "DS_SwitchingFacility",
+        "DS_Transformer",
+        "DS_VoltageRegulator",
     ]
 }
 
+#[allow(dead_code)]
 pub fn gis_data_lays() -> [&'static str; 3] {
-    [ "DS_GroupMeter_Detail", "GIS_HVMVCNL", "GIS_LVCNL", ]
+    ["DS_GroupMeter_Detail", "GIS_HVMVCNL", "GIS_LVCNL"]
 }
 
+#[allow(dead_code)]
 pub fn gis_plg_lays() -> [&'static str; 5] {
-    [ "LB_Amphoe", "LB_AOJ", "LB_Changwat", "LB_Tambol", "Zone_Use", ]
+    [
+        "LB_Amphoe",
+        "LB_AOJ",
+        "LB_Changwat",
+        "LB_Tambol",
+        "Zone_Use",
+    ]
 }
 
+#[allow(dead_code)]
 pub fn gis_dir() -> &'static str {
     //"../sgdata/OneDrive_2567-08-17/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS_Data",
     //"../sgdata/OneDrive_2567-08-17/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/data12092567"
     //"../sgdata/OneDrive_2567-08-17/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS-2024-08-10"
-    "E:/CHMBACK/gis-data/GIS-2024-08-10"
+    "/mnt/d/CHMBACK/pea-data/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS-2024-08-10"
 }
 
+pub fn gis2_dir() -> &'static str {
+    "/mnt/d/CHMBACK/pea-data/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS-2024-09-12"
+}
+pub fn gis1_dir() -> &'static str {
+    "/mnt/d/CHMBACK/pea-data/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS-2024-08-10"
+}
 pub fn db1_dir() -> &'static str {
-    //"../sgdata/db1"
-    //"../sgdata/db2"
     "../sgdata/db1"
 }
-
 pub fn db2_dir() -> &'static str {
     "../sgdata/db2"
 }
 
 pub async fn read_aoj() {
-    let mut prov = HashMap::<String,Vec::<Vec::<Vec<(f64,f64)>>>>::new();
+    let mut prov = HashMap::<String, Vec<Vec<Vec<(f64, f64)>>>>::new();
     for x in ar_list() {
         let rg = format!("{}/{}_LB_AOJ.rg", db1_dir(), x);
         let db = format!("{}/{}_LB_AOJ.db", db1_dir(), x);
-        if let (Ok(frg), Ok(fdb)) = (File::open(&rg),File::open(&db)) {
+        if let (Ok(frg), Ok(fdb)) = (File::open(&rg), File::open(&db)) {
             let rdrg = BufReader::new(frg);
             let rddb = BufReader::new(fdb);
-            if let (Ok(urg), Ok(udb)) = 
-                (bincode::deserialize_from::<BufReader<File>,Vec::<Vec::<Vec<(f64,f64)>>>>(rdrg)
-                ,bincode::deserialize_from::<BufReader<File>,Vec::<HashMap::<String,DbfVal>>>(rddb))
-            {
+            if let (Ok(urg), Ok(udb)) = (
+                bincode::deserialize_from::<BufReader<File>, Vec<Vec<Vec<(f64, f64)>>>>(rdrg),
+                bincode::deserialize_from::<BufReader<File>, Vec<HashMap<String, DbfVal>>>(rddb),
+            ) {
                 print!("======= : {}\n", x);
-                let ll = udb.len();
+                //let ll = udb.len();
                 for i in 0..udb.len() {
                     if let Some(DbfVal::Character(Some(nm))) = udb[i].get("CODE") {
                         if let Some(ls) = prov.get_mut(nm) {
@@ -125,19 +154,19 @@ pub async fn read_aoj() {
 }
 
 pub async fn read_prov() {
-    let mut prov = HashMap::<String,Vec::<Vec::<Vec<(f64,f64)>>>>::new();
+    let mut prov = HashMap::<String, Vec<Vec<Vec<(f64, f64)>>>>::new();
     for x in ar_list() {
         let rg = format!("{}/{}_LB_Changwat.rg", db1_dir(), x);
         let db = format!("{}/{}_LB_Changwat.db", db1_dir(), x);
-        if let (Ok(frg), Ok(fdb)) = (File::open(&rg),File::open(&db)) {
+        if let (Ok(frg), Ok(fdb)) = (File::open(&rg), File::open(&db)) {
             let rdrg = BufReader::new(frg);
             let rddb = BufReader::new(fdb);
-            if let (Ok(urg), Ok(udb)) = 
-                (bincode::deserialize_from::<BufReader<File>,Vec::<Vec::<Vec<(f64,f64)>>>>(rdrg)
-                ,bincode::deserialize_from::<BufReader<File>,Vec::<HashMap::<String,DbfVal>>>(rddb))
-            {
+            if let (Ok(urg), Ok(udb)) = (
+                bincode::deserialize_from::<BufReader<File>, Vec<Vec<Vec<(f64, f64)>>>>(rdrg),
+                bincode::deserialize_from::<BufReader<File>, Vec<HashMap<String, DbfVal>>>(rddb),
+            ) {
                 print!("======= : {}\n", x);
-                let ll = udb.len();
+                //let ll = udb.len();
                 for i in 0..udb.len() {
                     if let Some(DbfVal::Character(Some(nm))) = udb[i].get("CHANGWAT_1") {
                         if let Some(ls) = prov.get_mut(nm) {
@@ -158,65 +187,99 @@ pub async fn read_prov() {
     }
 }
 
+#[allow(dead_code)]
 pub async fn read_gis_0810() {
-    read_shp().await;
+    read_shp_0(gis1_dir(), db1_dir()).await;
 }
 
+#[allow(dead_code)]
 pub async fn read_gis_0912() {
-    read_shp().await;
+    read_shp_0(gis2_dir(), db2_dir()).await;
 }
 
 pub async fn read_shp() {
+    println!("read shp 1");
+    read_gis_0912().await;
+    println!("read shp 2");
+}
+
+pub async fn read_shp_0(gisdir: &str, wdir: &str) {
+    println!("read shp 1.1");
+
+    //    let wdir = db1_dir();
+    //let gisdir = gis_dir();
     //let lys = [
-    //    "N1", "N2", "N3", "C1", "C2", "C3", "NE1", 
-    //    "NE2", "NE3", "S1", "S2", "S3",
+    //"N1", "N2", "N3", "C1", "C2", "C3", "NE1",
+    //"NE2", "NE3", "S1",
+    //"S2",
+    //"S3",
     //];
     let lys = ar_list();
     let lns = [
-        "DS_BusBar", "DS_EserviceLine", "DS_HVBusBar", "DS_HVConductor", "DS_LVConductor",
+        "DS_BusBar",
+        "DS_EserviceLine",
+        "DS_HVBusBar",
+        "DS_HVConductor",
+        "DS_LVConductor",
         "DS_MVConductor",
     ];
     let pns = [
-        "DS_Capacitor", "DS_CircuitBreaker", "DS_Generator", "DS_HVCircuitbreaker", "DS_HVGenerator", 
-        "DS_HVPrimaryMeter", "DS_HVSwitch", "DS_HVTransformer", "DS_LowVoltageMeter", "DS_LVCapacitor", 
-        "DS_LVGenerator", "DS_PrimaryMeter", "DS_RECLOSER", "DS_Switch", "DS_SwitchingFacility", 
-        "DS_Transformer", "DS_VoltageRegulator", 
+        "DS_Capacitor",
+        "DS_CircuitBreaker",
+        "DS_Generator",
+        "DS_HVCircuitbreaker",
+        "DS_HVGenerator",
+        "DS_HVPrimaryMeter",
+        "DS_HVSwitch",
+        "DS_HVTransformer",
+        "DS_LowVoltageMeter",
+        "DS_LVCapacitor",
+        "DS_LVGenerator",
+        "DS_PrimaryMeter",
+        "DS_RECLOSER",
+        "DS_Switch",
+        "DS_SwitchingFacility",
+        "DS_Transformer",
+        "DS_VoltageRegulator",
     ];
-    let dbs = [
-        "DS_GroupMeter_Detail", "GIS_HVMVCNL", "GIS_LVCNL", 
-    ];
+    let dbs = ["DS_GroupMeter_Detail", "GIS_HVMVCNL", "GIS_LVCNL"];
     let rgs = [
-        "LB_Amphoe", "LB_AOJ", "LB_Changwat", "LB_Tambol", "Zone_Use",
+        "LB_Amphoe",
+        "LB_AOJ",
+        "LB_Changwat",
+        "LB_Tambol",
+        "Zone_Use",
     ];
 
     //let gisdir = format!("../sgdata/OneDrive_2567-08-17/ข้อมูลส่งให้อาจารย์ มธ/ข้อมูล GIS/GIS_Data");
-    let gisdir = gis_dir();
     for r in lys {
         let agisdir = format!("{}/{}", gisdir, r);
         //let wdir = format!("../sgdata/db1");
-        let wdir = db1_dir();
         std::fs::create_dir_all(&wdir).expect("ERR");
 
         // POLYGON
         for rg in rgs {
             let rgf = format!("{}/{}.shp", agisdir, rg);
+            println!("rgf {}", rgf);
             let mut cnt = 0;
             let mut cnu = 0;
             if let Ok(mut reader) = shapefile::Reader::from_path(rgf.clone()) {
                 let mut vrg = vec![];
                 let mut vdb = vec![];
-				for result in reader.iter_shapes_and_records_as::<shapefile::Polygon, dbase::Record>() {
-					if let Ok((gon, rc)) = result {
-						let mut ringpnts = Vec::<Vec<(f64,f64)>>::new();
-						for ring in gon.into_inner() {
-							let mut pnts = Vec::<(f64,f64)>::new();
-							for pnt in ring.into_inner() {
-								pnts.push((pnt.x, pnt.y));
+                for result in
+                    reader.iter_shapes_and_records_as::<shapefile::Polygon, dbase::Record>()
+                {
+                    if let Ok((gon, rc)) = result {
+                        let mut ringpnts = Vec::<Vec<(f64, f64)>>::new();
+                        for ring in gon.into_inner() {
+                            let mut pnts = Vec::<(f64, f64)>::new();
+                            for pnt in ring.into_inner() {
+                                pnts.push((pnt.x, pnt.y));
                                 //cnt += 1;
-							}
-							ringpnts.push(pnts);
+                            }
+                            ringpnts.push(pnts);
                             cnt += 1;
-						}
+                        }
                         cnu += 1;
                         vrg.push(ringpnts);
                         let r = db_rec(rc);
@@ -244,9 +307,10 @@ pub async fn read_shp() {
             if let Ok(mut reader) = shapefile::Reader::from_path(pnf.clone()) {
                 let mut vpn = vec![];
                 let mut vdb = vec![];
-                for result in reader.iter_shapes_and_records_as::<shapefile::Point, dbase::Record>() {
+                for result in reader.iter_shapes_and_records_as::<shapefile::Point, dbase::Record>()
+                {
                     if let Ok((pnt, rc)) = result {
-                        vpn.push((pnt.x,pnt.y));
+                        vpn.push((pnt.x, pnt.y));
                         let r = db_rec(rc);
                         vdb.push(r);
                         cnt += 1;
@@ -272,14 +336,15 @@ pub async fn read_shp() {
             let mut vdb = vec![];
             let mut vln = vec![];
             if let Ok(mut reader) = shapefile::Reader::from_path(&lnf) {
-                for result in reader.iter_shapes_and_records_as::<shapefile::Polyline, dbase::Record>()
+                for result in
+                    reader.iter_shapes_and_records_as::<shapefile::Polyline, dbase::Record>()
                 {
                     if let Ok((line, rc)) = result {
                         let mut lines = vec![];
                         for vpnts in line.into_inner() {
                             let mut line = vec![];
                             for pnt in vpnts {
-                                line.push((pnt.x,pnt.y));
+                                line.push((pnt.x, pnt.y));
                             }
                             lines.push(line);
                         }
@@ -316,13 +381,9 @@ pub async fn read_shp() {
             }
             print!("db: {} {}\n", dbf, cnt);
             let dbw = format!("{}/{}_{}.db", wdir, r, db);
-			if let Ok(ser) = bincode::serialize(&vdb) {
-				std::fs::write(dbw, ser).unwrap();
-			}
-
+            if let Ok(ser) = bincode::serialize(&vdb) {
+                std::fs::write(dbw, ser).unwrap();
+            }
         }
-
     }
-
 }
-

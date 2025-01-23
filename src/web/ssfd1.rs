@@ -1,7 +1,7 @@
 use crate::sg::ldp::base;
-use crate::sg::wk3;
+//use crate::sg::wk3;
 use askama::Template;
-use askama_axum;
+//use askama_axum;
 
 #[derive(Template, Debug, Default, Clone)]
 #[template(path = "pg2/ssfd1-1.html")]
@@ -19,7 +19,7 @@ pub struct Substation {
 
 #[derive(Debug, Clone, Default)]
 pub struct FeederLoad {
-    pub sbst: String,
+    pub _sbst: String,
     pub feed: String,
     pub good: i32,
     pub null: i32,
@@ -28,11 +28,12 @@ pub struct FeederLoad {
     pub adj_one: i32,
 }
 
+#[allow(dead_code)]
 pub async fn handler() -> LoadProfList {
     let base = base();
     let mut web = LoadProfList::default();
     let lpl = base.wk3_subst.read().await;
-    for (i, ss) in lpl.iter().enumerate() {
+    for (_i, ss) in lpl.iter().enumerate() {
         let mut nss = Substation::default();
         nss.sbst = ss.sbst.clone();
         nss.prov = ss.prov.clone();

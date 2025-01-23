@@ -1,15 +1,15 @@
-use crate::sg::{dcl, dcl::DaVa, ldp, ldp::base, uty::NumForm, wk5};
+use crate::sg::{dcl, dcl::DaVa, /*ldp*/ ldp::base, uty::NumForm, wk5};
 use askama::Template;
-use askama_axum;
-use axum::extract::{Path, Query};
+//use askama_axum;
+use axum::extract::{Path, /*Query*/};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Eq, Ord, PartialEq, PartialOrd};
-use std::collections::{HashMap, HashSet};
+use std::cmp::{/*Eq*/ Ord, /*PartialEq*/ /*PartialOrd*/};
+//use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 //use thousands::Separable;
 use tokio::sync::RwLock;
-use tokio::sync::{OwnedRwLockReadGuard, RwLockReadGuard};
+use tokio::sync::{OwnedRwLockReadGuard, /*RwLockReadGuard*/};
 
 #[derive(Template, Debug)]
 #[template(path = "pg2/wk5u.html", escape = "none")]
@@ -17,7 +17,7 @@ pub struct ReportTemp {
     pub title: String,
     pub prov: String,
     pub wk: OwnedRwLockReadGuard<wk5::Wk5Proc>,
-    pub cnt: usize,
+    //pub cnt: usize,
 }
 
 fn rp(wk5prc: &wk5::Wk5Proc) -> &Report {
@@ -31,8 +31,8 @@ impl ReportTemp {
     async fn new(wk5prc: Arc<RwLock<wk5::Wk5Proc>>, prov: String) -> Self {
         let wk = wk5prc.read_owned().await;
         let title = format!("INTERNAL RETURN RATE : {}", prov);
-        let cnt = 1;
-        ReportTemp { wk, title, prov, cnt, }
+        //let cnt = 1;
+        ReportTemp { wk, title, prov, /*cnt,*/ }
     }
     /*
     pub fn row_init(&mut self) -> usize {
@@ -58,6 +58,7 @@ impl ReportTemp {
         }
         rws
     }
+    #[allow(dead_code)]
     pub fn sum(&self, c: &usize) -> String {
         if *c == 0 {
             return format!("");
@@ -114,10 +115,10 @@ const TT: [&str; 13] = [
     "NO", "PROV", "SSID", "SSNAME", "FDID", "DTX", "M1P", "M3P", "COST", "FR", "ER", "FIRR", "EIRR",
 ];
 
-pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, acfg: Arc<RwLock<dcl::Config>>) {
+pub async fn make_repo(wk5prc: &mut wk5::Wk5Proc, _acfg: Arc<RwLock<dcl::Config>>) {
     let mut repo = rp(wk5prc).clone();
 
-    let cfg = acfg.read().await;
+    //let cfg = acfg.read().await;
     for t in TT {
         repo.cols.push(t.to_string());
         repo.sums.push(DaVa::None);
@@ -224,10 +225,10 @@ fn sum(repo: &mut Report, ssv: &Vec<wk5::Substation>) {
                 _ => DaVa::None,
             };
         }
-        let mut txno = 0;
-        for (ri, rr) in repo.rows.iter().enumerate() {
-            if let DaVa::USZ(v) = repo.dava(ssv, ri, 5) {
-                txno += v;
+        //let mut txno = 0;
+        for (ri, _rr) in repo.rows.iter().enumerate() {
+            if let DaVa::USZ(_v) = repo.dava(ssv, ri, 5) {
+                //txno += v;
             }
 
             for ci in 0..repo.cols.len() {
